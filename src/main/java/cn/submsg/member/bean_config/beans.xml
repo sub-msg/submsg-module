@@ -26,6 +26,7 @@
       
       <bean id="msgSendLogDao" class=" cn.submsg.member.dao.MsgSendLogDao"></bean>
       
+      <bean id="mallProductDao" class=" cn.submsg.member.dao.MallProductDao"></bean>
       
       <bean id="memberService" class=" cn.submsg.member.service.MemberService"></bean>
 </beans>

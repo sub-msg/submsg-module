@@ -26,6 +26,7 @@ public class Member{
 	private String postCode;
 	private Integer lang;
 	private Integer serviceType;
+    private int status;
 	private Date updatedTime;
 	private Date createdTime;
 	public void setId(Integer id){
@@ -153,6 +154,12 @@ public class Member{
 	}
 	public Date getCreatedTime(){
 		return createdTime;
+	}
+	public int getStatus() {
+		return status;
+	}
+	public void setStatus(int status) {
+		this.status = status;
 	}
 }
 
