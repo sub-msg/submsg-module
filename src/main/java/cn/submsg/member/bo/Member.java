@@ -7,6 +7,10 @@ import java.util.Date;
 
 
 public class Member{
+	
+	public static final int NOT_ACTIVED = -1;
+	public static final int ACTIVED = 0;
+	
 	private Integer id;
 	private String userName;
 	private String password;

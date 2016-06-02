@@ -28,5 +28,8 @@
       
       <bean id="mallProductDao" class=" cn.submsg.member.dao.MallProductDao"></bean>
       
+      <bean id="memberVerifyDao" class=" cn.submsg.member.dao.MemberVerifyDao"></bean>
+      
       <bean id="memberService" class=" cn.submsg.member.service.MemberService"></bean>
+      <bean id="mailTempService" class=" cn.submsg.member.service.MailTempService"></bean>
 </beans>
