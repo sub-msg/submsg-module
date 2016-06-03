@@ -16,4 +16,25 @@ public class MemberDao extends SubMsgBaseDao<Member> {
 		String sql = "update "+ super.getTable() + " set status=? where id=? limit 1";
 		return this.getJdbc().update(sql, SqlParameter.Instance().withInt(status).withInt(userId))>0;
 	}
+	
+	/**
+	 * 更改用户邮箱
+	 * @param userId
+	 * @param email
+	 * @return
+	 */
+	public boolean updateMemberEmail(int userId,String email){
+		String sql = "update "+ super.getTable() + " set user_name=?,email=? where id=? limit 1";
+		return this.getJdbc().update(sql, SqlParameter.Instance().withString(email).withString(email).withInt(userId))>0;
+	}
+	/**
+	 * 更新密码
+	 * @param userId
+	 * @param passWord
+	 * @return
+	 */
+	public boolean updatePassword(int userId,String passWord){
+		String sql = "update "+ super.getTable() + " set password=?  where id=? limit 1";
+		return this.getJdbc().update(sql, SqlParameter.Instance().withString(passWord).withInt(userId))>0;
+	}
 }

@@ -1,21 +1,20 @@
 package cn.submsg.member.service;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Map;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
-import com.google.common.io.Files;
 import com.sr178.game.framework.log.LogSystem;
+
 
 public class MailTempService {
 	
-	private static final String MAIL_TEMP_DIR = "mailtemp";
+	private static final String MAIL_TEMP_DIR = "/mailtemp/";
 	
+	public static final int TITLE = 1;
+	public static final int CONTENT = 2 ;
 	
 
 	private Map<String,String> tempCache = Maps.newHashMap();
@@ -27,17 +26,12 @@ public class MailTempService {
 	 * @return
 	 * @throws IOException
 	 */
-	private String getMailTemp(String tempName) throws IOException{
+	private String getMailTempByFileName(String tempName) throws IOException{
 		if(tempCache.containsKey(tempName)){
 			return tempCache.get(tempName);
 		}else{
-			String sDirF = System.getProperty("file.separator");
-			InputStream is1 = MailTempService.class.getResourceAsStream("/mailtemp/"+tempName);
-			InputStream is2 = MailTempService.class.getResourceAsStream("/mailtemp/"+tempName);
+			InputStream is1 = MailTempService.class.getResourceAsStream(MAIL_TEMP_DIR+tempName);
 			String content = inputStream2String(is1,"utf-8");
-			String contentGbk = inputStream2String(is2,"gb2312");
-			System.out.println(content);
-			System.out.println(contentGbk);
 			tempCache.put(tempName, content);
 			return content;
 		}
@@ -59,13 +53,14 @@ public class MailTempService {
 	 * @return
 	 * @throws IOException
 	 */
-	public static final String[] typesToName = new String[]{"active.html"};
-	public String getActiveMailTemp(int tp,String ... params){
+	public String getMailTemp(String fileName,String ... params){
 	    String content = null;
 		try {
-			content = getMailTemp(typesToName[tp-1]);
-			for(int i=0;i<params.length;i++){
-				content = content.replace("@{"+i+"}", params[i]);
+			content = getMailTempByFileName(fileName);
+			if(params!=null){
+				for(int i=0;i<params.length;i++){
+					content = content.replace("@{"+i+"}", params[i]);
+				}
 			}
 			return content;
 		} catch (IOException e) {
