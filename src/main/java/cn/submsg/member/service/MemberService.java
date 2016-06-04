@@ -8,7 +8,6 @@ import javax.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.sr178.common.jdbc.SqlParameter;
 import com.sr178.common.jdbc.bean.SqlParamBean;
 import com.sr178.game.framework.exception.ServiceException;
 import com.sr178.game.framework.log.LogSystem;
