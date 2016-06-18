@@ -63,5 +63,21 @@ public class ApiReqErrorLog{
 	public Date getCreatedTime(){
 		return createdTime;
 	}
+	
+	public ApiReqErrorLog(Integer userId, Integer projectId, String apiName, String errorCode, String errorDesc,
+			String reqIp, Date createdTime) {
+		super();
+		this.userId = userId;
+		this.projectId = projectId;
+		this.apiName = apiName;
+		this.errorCode = errorCode;
+		this.errorDesc = errorDesc;
+		this.reqIp = reqIp;
+		this.createdTime = createdTime;
+	}
+	
+	public ApiReqErrorLog() {
+		super();
+	}
 }
 

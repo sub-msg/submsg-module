@@ -9,10 +9,12 @@ import java.util.Date;
 public class MemberMessageTemp{
 	private Integer id;
 	private Integer userId;
+	private Integer appId;
 	private String tempId;
 	private String tempTitle;
 	private String tempContent;
 	private Integer tempStatus;
+	private Integer signId;
 	private Date updatedTime;
 	private Date createdTime;
 	public void setId(Integer id){
@@ -62,6 +64,18 @@ public class MemberMessageTemp{
 	}
 	public Date getCreatedTime(){
 		return createdTime;
+	}
+	public Integer getSignId() {
+		return signId;
+	}
+	public void setSignId(Integer signId) {
+		this.signId = signId;
+	}
+	public Integer getAppId() {
+		return appId;
+	}
+	public void setAppId(Integer appId) {
+		this.appId = appId;
 	}
 }
 

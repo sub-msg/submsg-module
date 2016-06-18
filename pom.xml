@@ -56,5 +56,10 @@
             <artifactId>moudle-utils</artifactId>
             <version>0.0.1-SNAPSHOT</version>
   	    </dependency>
+  	    <dependency>
+            <groupId>com.sr178.module.sms</groupId>
+            <artifactId>sms</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+  	    </dependency>
   	  </dependencies>
 </project>
