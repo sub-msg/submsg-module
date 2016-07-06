@@ -12,6 +12,7 @@ public class MemberMessageSign{
 	private String signContent;
 	private Integer signStatus;
 	private Integer signPosition;
+	private String signNum;
 	private Date updatedTime;
 	private Date createdTime;
 	public void setId(Integer id){
@@ -55,6 +56,12 @@ public class MemberMessageSign{
 	}
 	public Date getCreatedTime(){
 		return createdTime;
+	}
+	public String getSignNum() {
+		return signNum;
+	}
+	public void setSignNum(String signNum) {
+		this.signNum = signNum;
 	}
 }
 

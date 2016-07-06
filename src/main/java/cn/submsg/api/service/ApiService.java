@@ -8,10 +8,12 @@ import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.base.Strings;
 import com.sr178.common.jdbc.bean.SqlParamBean;
 import com.sr178.game.framework.exception.ServiceException;
 import com.sr178.module.sms.config.AppConfig;
 import com.sr178.module.sms.util.RequestEncoder;
+import com.sr178.module.utils.MD5Security;
 
 import cn.submsg.api.bean.SendMessageResult;
 import cn.submsg.member.bo.ApiReqErrorLog;
@@ -19,11 +21,15 @@ import cn.submsg.member.bo.MemberMessageSign;
 import cn.submsg.member.bo.MemberMessageTemp;
 import cn.submsg.member.bo.MemberMsgInfo;
 import cn.submsg.member.bo.MemberProject;
+import cn.submsg.member.bo.MsgSendLog;
 import cn.submsg.member.dao.ApiReqErrorLogDao;
 import cn.submsg.member.dao.MemberMessageSignDao;
 import cn.submsg.member.dao.MemberMessageTempDao;
 import cn.submsg.member.dao.MemberMsgInfoDao;
 import cn.submsg.member.dao.MemberProjectDao;
+import cn.submsg.member.dao.MsgSendLogDao;
+import cn.submsg.message.bean.MsgBean;
+import cn.submsg.message.service.MessageQueueService;
 import cn.submsg.message.utils.MsgContentUtils;
 
 public class ApiService {
@@ -37,7 +43,10 @@ public class ApiService {
 	private ApiReqErrorLogDao apiReqErrorLogDao;
 	@Autowired
 	private MemberMsgInfoDao memberMsgInfoDao;
-	
+	@Autowired
+	private MsgSendLogDao msgSendLogDao;
+	@Autowired
+	private MessageQueueService messageQueueService;
 	
 	
 	public static final String TO = "to";
@@ -76,7 +85,21 @@ public class ApiService {
 		String serverSign = createSignature(sign_type, data, appId, memberProject.getProjectKey());
 		if(!serverSign.equals(signature)){
 			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "2", "签名校验不正确", ip);
-			throw new ServiceException(1,"签名校验不正确，serverSign=["+serverSign+"],clientSign = ["+signature+"]");
+			throw new ServiceException(2,"签名校验不正确，serverSign=["+serverSign+"],clientSign = ["+signature+"]");
+		}
+		//校验ip白名单
+		if(!Strings.isNullOrEmpty(memberProject.getWhiteIp())){
+			String[] whiteIps = memberProject.getWhiteIp().split(",");
+			boolean isCross = false;
+			for(String whiteIp:whiteIps){
+				if(whiteIp.equals(ip)){
+					isCross = true;
+				}
+			}
+			if(!isCross){
+				addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "7", "ip不在白名单内："+ip+",whiteIp=["+memberProject.getWhiteIp()+"]", ip);
+				throw new ServiceException(7,"ip不在白名单内："+ip+",whiteIp=["+memberProject.getWhiteIp()+"]");
+			}
 		}
 		//校验手机号码
 		if(!isMobile(to)){
@@ -103,12 +126,24 @@ public class ApiService {
 			throw new ServiceException(5,"发送许可数量不足！");
 		}
 		
+		
 		MemberMsgInfo memberMsgInfo = memberMsgInfoDao.get(new SqlParamBean("user_id", memberProject.getUserId()));
 		//将发送请求加入到消息队列中
 		
-		//
+		//写入日志
+		String sendId = MD5Security.md5_32_Small(System.nanoTime()+"");
+		MsgBean msgBean = new MsgBean(sendId,to, msgContent, messageSign.getSignNum());
+		if(!messageQueueService.pushReqMsg(msgBean)){
+			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "8", "队列添加失败！", ip);
+			throw new ServiceException(8,"队列添加失败！");
+		}
 		
+		MsgSendLog msgSendLog = new MsgSendLog(memberProject.getUserId(), memberProject.getId(), sendId, apiName, msgContent, messageSign.getSignContent(), fee, to, MsgSendLog.ST_CREATE, new Date(), new Date());
+		msgSendLogDao.add(msgSendLog);
 		
+		apiResult.setFee(fee);
+		apiResult.setMsgNum(memberMsgInfo.getMsgNum());
+		apiResult.setSendId(sendId);
 		return apiResult;
 	}
 	/**
