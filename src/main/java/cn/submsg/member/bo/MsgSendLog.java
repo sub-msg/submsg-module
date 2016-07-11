@@ -42,6 +42,7 @@ public class MsgSendLog{
 	public static final int ST_SEND = 1;//正在发送
 	public static final int ST_SUCCESS = 2;//发送成功
 	public static final int ST_FAIL = 3;//发送失败
+	public static final int ST_DELEVER_SUCCESS = 4;//投递成功 即受到了响应消息
 	
 	public void setId(Integer id){
 	this.id=id;

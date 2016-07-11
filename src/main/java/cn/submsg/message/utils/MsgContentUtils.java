@@ -6,6 +6,7 @@ import java.util.Set;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Strings;
 import com.sr178.game.framework.log.LogSystem;
 
 public class MsgContentUtils {
@@ -26,10 +27,12 @@ public class MsgContentUtils {
      */
 	public static String getContent(String tempContent,String vars,String signContent){
 		String result = tempContent;
-		JSONObject jsonObject = JSON.parseObject(vars);
-		Set<Entry<String, Object>> sets = jsonObject.entrySet();
-		for(Entry<String, Object> entry:sets){
-			result = result.replace("@var("+entry.getKey()+")", entry.getValue().toString());
+		if (!Strings.isNullOrEmpty(vars)) {
+			JSONObject jsonObject = JSON.parseObject(vars);
+			Set<Entry<String, Object>> sets = jsonObject.entrySet();
+			for (Entry<String, Object> entry : sets) {
+				result = result.replace("@var(" + entry.getKey() + ")", entry.getValue().toString());
+			}
 		}
 		return getFinallySignContent(signContent)+result;
 	}
