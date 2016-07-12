@@ -84,7 +84,7 @@ public class ApiService {
 		data.put(SIGN_TYPE, sign_type);
 		String serverSign = createSignature(sign_type, data, appId, memberProject.getProjectKey());
 		if(!serverSign.equals(signature)){
-			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "2", "签名校验不正确", ip);
+//			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "2", "签名校验不正确", ip);
 			throw new ServiceException(2,"签名校验不正确，serverSign=["+serverSign+"],clientSign = ["+signature+"]");
 		}
 		//校验ip白名单
@@ -97,33 +97,33 @@ public class ApiService {
 				}
 			}
 			if(!isCross){
-				addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "7", "ip不在白名单内："+ip+",whiteIp=["+memberProject.getWhiteIp()+"]", ip);
+//				addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "7", "ip不在白名单内："+ip+",whiteIp=["+memberProject.getWhiteIp()+"]", ip);
 				throw new ServiceException(7,"ip不在白名单内："+ip+",whiteIp=["+memberProject.getWhiteIp()+"]");
 			}
 		}
 		//校验手机号码
 		if(!isMobile(to)){
-			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "3", "手机号码不符合规则"+to, ip);
-			throw new ServiceException(2,"手机号码不符合规则"+to);
+//			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "3", "手机号码不符合规则"+to, ip);
+			throw new ServiceException(3,"手机号码不符合规则"+to);
 		}
 		//查询出模板id
 		MemberMessageTemp  messageTemp = memberMessageTempDao.get(new SqlParamBean("temp_id", tempId));
 		if(messageTemp==null||messageTemp.getTempStatus().intValue()==MsgContentUtils.STATUS_NOT||messageTemp.getUserId().intValue()!=memberProject.getUserId().intValue()||messageTemp.getAppId().intValue()!=messageTemp.getAppId().intValue()){
-			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "4", "无效的模板id"+tempId, ip);
-			throw new ServiceException(3,"无效的模板id"+tempId);
+//			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "4", "无效的模板id"+tempId, ip);
+			throw new ServiceException(4,"无效的模板id"+tempId);
 		}
 		//消息签名
 		MemberMessageSign messageSign = memberMessageSignDao.get(new SqlParamBean("id", messageTemp.getSignId()));
 		if(messageSign==null||messageSign.getSignStatus().intValue()==MsgContentUtils.STATUS_NOT||messageSign.getUserId().intValue()!=memberProject.getUserId().intValue()){
-			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "5", "无效的签名id"+messageTemp.getSignId(), ip);
-			throw new ServiceException(4,"无效的签名id"+messageTemp.getSignId());
+//			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "5", "无效的签名id"+messageTemp.getSignId(), ip);
+			throw new ServiceException(5,"无效的签名id"+messageTemp.getSignId());
 		}
 		//减发送许可数量
 		String msgContent = MsgContentUtils.getContent(messageTemp.getTempContent(), vars, messageSign.getSignContent());
 		int fee = MsgContentUtils.getFeeNum(msgContent);
 		if(!memberMsgInfoDao.reduceMsgNum(memberProject.getUserId(), fee)){
-			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "6", "发送许可数量不足！", ip);
-			throw new ServiceException(5,"发送许可数量不足！");
+//			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "6", "发送许可数量不足！", ip);
+			throw new ServiceException(6,"发送许可数量不足！");
 		}
 		
 		
@@ -140,7 +140,7 @@ public class ApiService {
 		
 		MsgBean msgBean = new MsgBean(sendId,to, msgContent, messageSign.getSignNum());
 		if(!messageQueueService.pushReqMsg(msgBean)){
-			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "8", "队列添加失败！", ip);
+//			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "8", "队列添加失败！", ip);
 			throw new ServiceException(8,"队列添加失败！");
 		}
 		
