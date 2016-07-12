@@ -132,14 +132,18 @@ public class ApiService {
 		
 		//写入日志
 		String sendId = MD5Security.md5_32_Small(System.nanoTime()+"");
+		
+		MsgSendLog msgSendLog = new MsgSendLog(memberProject.getUserId(), memberProject.getId(), sendId, apiName, msgContent, messageSign.getSignContent(), fee, to, MsgSendLog.ST_CREATE, new Date(), new Date());
+		if(!msgSendLogDao.add(msgSendLog)){
+			throw new ServiceException(9,"日志添加失败！");
+		}
+		
 		MsgBean msgBean = new MsgBean(sendId,to, msgContent, messageSign.getSignNum());
 		if(!messageQueueService.pushReqMsg(msgBean)){
 			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "8", "队列添加失败！", ip);
 			throw new ServiceException(8,"队列添加失败！");
 		}
 		
-		MsgSendLog msgSendLog = new MsgSendLog(memberProject.getUserId(), memberProject.getId(), sendId, apiName, msgContent, messageSign.getSignContent(), fee, to, MsgSendLog.ST_CREATE, new Date(), new Date());
-		msgSendLogDao.add(msgSendLog);
 		
 		apiResult.setFee(fee);
 		apiResult.setMsgNum(memberMsgInfo.getMsgNum());

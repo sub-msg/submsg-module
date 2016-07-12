@@ -2,6 +2,7 @@ package cn.submsg.member.dao;
 
 import java.util.Date;
 
+
 import com.sr178.common.jdbc.SqlParameter;
 
 import cn.submsg.common.dao.SubMsgBaseDao;
@@ -19,7 +20,8 @@ public class MsgSendLogDao extends SubMsgBaseDao<MsgSendLog> {
 	 */
 	public boolean updateLogStatusToSuccess(String sendId,Date resTime,String resCode,String msgId){
 		String sql = "update "+super.getTable()+" set msg_id=?,res_time=?,res_code=?,status="+MsgSendLog.ST_SUCCESS+" where send_id=? limit 1";
-		return this.getJdbc().update(sql, SqlParameter.Instance().withString(msgId).withObject(resTime).withString(resCode).withString(sendId))>0;
+		boolean result = this.getJdbc().update(sql, SqlParameter.Instance().withString(msgId).withObject(resTime).withString(resCode).withString(sendId))>0;
+		return result;
 	}
 	/**
 	 * 更新状态至失败
@@ -39,6 +41,7 @@ public class MsgSendLogDao extends SubMsgBaseDao<MsgSendLog> {
 	 */
 	public boolean updateLogStatusToSend(String sendId,Date sendTime){
 		String sql = "update "+super.getTable()+" set send_time=?,status="+MsgSendLog.ST_SEND+" where send_id=? limit 1";
-		return this.getJdbc().update(sql, SqlParameter.Instance().withObject(sendTime).withString(sendId))>0;
+		boolean result =  this.getJdbc().update(sql, SqlParameter.Instance().withObject(sendTime).withString(sendId))>0;
+		return result;
 	}
 }
