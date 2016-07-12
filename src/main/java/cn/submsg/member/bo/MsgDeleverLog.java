@@ -40,6 +40,9 @@ public class MsgDeleverLog {
 	public void setCreatedTime(Date createdTime) {
 		this.createdTime = createdTime;
 	}
-	
-	
+	@Override
+	public String toString() {
+		return "MsgDeleverLog [id=" + id + ", msgId=" + msgId + ", stat=" + stat + ", destnationId=" + destnationId
+				+ ", createdTime=" + createdTime + "]";
+	}
 }
