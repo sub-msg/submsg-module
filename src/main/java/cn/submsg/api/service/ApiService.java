@@ -11,11 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Strings;
 import com.sr178.common.jdbc.bean.SqlParamBean;
 import com.sr178.game.framework.exception.ServiceException;
-import com.sr178.module.sms.config.AppConfig;
-import com.sr178.module.sms.util.RequestEncoder;
 import com.sr178.module.utils.MD5Security;
 
 import cn.submsg.api.bean.SendMessageResult;
+import cn.submsg.api.utils.RequestEncoder;
 import cn.submsg.member.bo.ApiReqErrorLog;
 import cn.submsg.member.bo.MemberMessageSign;
 import cn.submsg.member.bo.MemberMessageTemp;
@@ -62,6 +61,11 @@ public class ApiService {
 	public static final String SIGN_TYPE = "sign_type";
 	
 	public static final String SIGNATURE = "signature";
+	
+	
+	public static final String TYPE_NORMAL = "normal";
+	public static final String TYPE_MD5 = "md5";
+	public static final String TYPE_SHA1 = "sha1";
     
 	public SendMessageResult sendMsg(String appId, String tempId,String to,String timestamp, String signature, String sign_type, String vars,String apiName,String ip){
 		SendMessageResult apiResult = new SendMessageResult();
@@ -168,9 +172,9 @@ public class ApiService {
 	 */
 	private String buildSignature(String type,String appId,String appKey,String data) {
 		String jointData = appId + appKey + data + appId + appKey;
-		if (AppConfig.TYPE_MD5.equals(type)) {
+		if (TYPE_MD5.equals(type)) {
 			return RequestEncoder.encode(RequestEncoder.MD5, jointData);
-		} else if (AppConfig.TYPE_SHA1.equals(type)) {
+		} else if (TYPE_SHA1.equals(type)) {
 			return RequestEncoder.encode(RequestEncoder.SHA1, jointData);
 		}
 		return appKey;
