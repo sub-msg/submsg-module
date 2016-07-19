@@ -16,12 +16,16 @@ import com.sr178.module.utils.ParamCheck;
 import com.sr178.module.utils.SendMailUtils;
 
 import cn.submsg.common.listener.VerifyLisner;
+import cn.submsg.member.bean.MsgTempBean;
 import cn.submsg.member.bo.MallProducts;
 import cn.submsg.member.bo.Member;
+import cn.submsg.member.bo.MemberMsgInfo;
 import cn.submsg.member.bo.MemberVerify;
 import cn.submsg.member.constant.VerifyType;
 import cn.submsg.member.dao.MallProductDao;
 import cn.submsg.member.dao.MemberDao;
+import cn.submsg.member.dao.MemberMessageTempDao;
+import cn.submsg.member.dao.MemberMsgInfoDao;
 import cn.submsg.member.dao.MemberVerifyDao;
 
 public class MemberService {
@@ -41,6 +45,10 @@ public class MemberService {
     private MemberVerifyDao memberVerifyDao;
     @Autowired
     private MailTempService mailTempService;
+    @Autowired
+    private MemberMsgInfoDao memberMsgInfoDao; 
+    @Autowired
+    private MemberMessageTempDao memberMessageTempDao;
     /**
      * 获取所有产品列表
      * @return
@@ -48,6 +56,8 @@ public class MemberService {
 	public List<MallProducts> getProductList(){
 		return mallProductDao.getAll();
 	}
+	
+	
 	/**
 	 * 查询用户名及用户
 	 * @param userName
@@ -274,6 +284,30 @@ public class MemberService {
 		} catch (MessagingException e) {
 			LogSystem.error(e, "发送邮件失败-->toAddress=["+toAddress+"],title=["+title+"],content=["+content+"]");
 		}
+	}
+	/**
+	 * 获取用户信息
+	 * @param userName
+	 * @return
+	 */
+	public Member getMemberByUserName(String userName){
+		return memberDao.get(new SqlParamBean("user_name", userName));
+	}
+	/**
+	 * 获取用户短信信息
+	 * @param userName
+	 * @return
+	 */
+	public MemberMsgInfo getMemberMsgInfo(int userId){
+		return memberMsgInfoDao.get(new SqlParamBean("user_id", userId));
+	}
+	/**
+	 * 获取用户最近使用的模板列表
+	 * @param userId
+	 * @return
+	 */
+	public List<MsgTempBean> getUserMsgTempList(int userId,int limit){
+		return memberMessageTempDao.getMsgTempBeanList(userId,limit);
 	}
 	
 	public static void main(String[] args) {

@@ -13,7 +13,7 @@ public class MemberMsgInfoDao extends SubMsgBaseDao<MemberMsgInfo> {
      * @return
      */
 	public boolean reduceMsgNum(int userId,int reduceNum){
-		String sql = "update "+super.getTable()+" set msg_num=msg_num-? where user_id=? and msg_num-?>0 limit 1";
+		String sql = "update "+super.getTable()+" set msg_num=msg_num-? where user_id=? and msg_num-?>=0 limit 1";
 		return super.getJdbc().update(sql, SqlParameter.Instance().withInt(reduceNum).withInt(userId).withInt(reduceNum))>0;
 	}
 }
