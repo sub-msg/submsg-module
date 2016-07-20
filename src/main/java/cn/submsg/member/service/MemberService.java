@@ -20,12 +20,14 @@ import cn.submsg.member.bean.MsgTempBean;
 import cn.submsg.member.bo.MallProducts;
 import cn.submsg.member.bo.Member;
 import cn.submsg.member.bo.MemberMsgInfo;
+import cn.submsg.member.bo.MemberProject;
 import cn.submsg.member.bo.MemberVerify;
 import cn.submsg.member.constant.VerifyType;
 import cn.submsg.member.dao.MallProductDao;
 import cn.submsg.member.dao.MemberDao;
 import cn.submsg.member.dao.MemberMessageTempDao;
 import cn.submsg.member.dao.MemberMsgInfoDao;
+import cn.submsg.member.dao.MemberProjectDao;
 import cn.submsg.member.dao.MemberVerifyDao;
 
 public class MemberService {
@@ -49,6 +51,8 @@ public class MemberService {
     private MemberMsgInfoDao memberMsgInfoDao; 
     @Autowired
     private MemberMessageTempDao memberMessageTempDao;
+    @Autowired
+    private MemberProjectDao memberProjectDao;
     /**
      * 获取所有产品列表
      * @return
@@ -308,6 +312,14 @@ public class MemberService {
 	 */
 	public List<MsgTempBean> getUserMsgTempList(int userId,int limit){
 		return memberMessageTempDao.getMsgTempBeanList(userId,limit);
+	}
+	/**
+	 * 获取用户应用列表
+	 * @param userId
+	 * @return
+	 */
+	public List<MemberProject> getMemberProjectList(int userId){
+		return memberProjectDao.getList(" order by created_time desc", new SqlParamBean("user_id", userId));
 	}
 	
 	public static void main(String[] args) {
