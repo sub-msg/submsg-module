@@ -93,7 +93,7 @@ public class ApiService {
 		}
 		//校验ip白名单
 		if(!Strings.isNullOrEmpty(memberProject.getWhiteIp())){
-			String[] whiteIps = memberProject.getWhiteIp().split(",");
+			String[] whiteIps = memberProject.getWhiteIp().split(";");
 			boolean isCross = false;
 			for(String whiteIp:whiteIps){
 				if(whiteIp.equals(ip)){

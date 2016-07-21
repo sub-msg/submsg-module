@@ -322,6 +322,76 @@ public class MemberService {
 		return memberProjectDao.getList(" order by created_time desc", new SqlParamBean("user_id", userId));
 	}
 	
+	/**
+	 * 获取用户应用列表
+	 * @param userId
+	 * @return
+	 */
+	public MemberProject getMemberProject(int userId,int appId){
+		return memberProjectDao.get(new SqlParamBean("id", appId),new SqlParamBean("and","user_id", userId));
+	}
+	/**
+	 * 删除app
+	 * @param appId
+	 */
+	public void deleteApp(int userId,int appId){
+		if(!memberProjectDao.delete(new SqlParamBean("id", appId),new SqlParamBean("and", "user_id", userId))){
+			throw new ServiceException(1,"发生了错误");
+		}
+	}
+	/**
+	 * 修改应用信息
+	 * @param appId
+	 * @param projectName
+	 * @param whiteIp
+	 * @param maxSendNumDaily
+	 * @param status
+	 */
+	public void updateMemberProject(int userId,int appId,String projectName,String whiteIp,int maxSendNumDaily,int status){
+		memberProjectDao.update(userId,appId, projectName,whiteIp, maxSendNumDaily, status);
+	}
+	/**
+	 * 更新appKey
+	 * @param userId
+	 * @param appId
+	 */
+	public String updateMemberProjectAppKey(int userId,int appId){
+		String appKey = generatorAppKey();
+		if(memberProjectDao.updateAppKey(userId, appId, appKey)){
+			return appKey;
+		}
+		throw new ServiceException(1,"发生了错误");
+	}
+	/**
+	 * 创建应用
+	 * @return
+	 */
+	private String generatorAppKey(){
+		return MD5Security.md5_32_Small(System.currentTimeMillis()+"881asdf@!2331123");
+	}
+	/**
+	 * 创建应用
+	 * @param userId
+	 * @param appName
+	 * @param maxSendNumDaily
+	 */
+	public void createMemberProject(int userId,String appName,int maxSendNumDaily){
+		MemberProject memberProject = new MemberProject();
+		memberProject.setCreatedTime(new Date());
+		memberProject.setMaxSendNumDaily(maxSendNumDaily);
+		memberProject.setProjectKey(generatorAppKey());
+		memberProject.setProjectName(appName);
+		memberProject.setStatus(1);
+		memberProject.setUpdatedTime(new Date());
+		memberProject.setWhiteIp("");
+		memberProject.setUserId(userId);
+		if(!memberProjectDao.add(memberProject)){
+			throw new ServiceException(1,"发生了错误");
+		}
+	}
+	
+	
+	
 	public static void main(String[] args) {
 		String cc= "xxxxxx${code}";
 		System.out.println(cc.replace("${code}", "1223"));
