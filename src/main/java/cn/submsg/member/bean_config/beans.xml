@@ -32,8 +32,9 @@
       
       <bean id="msgDeleverLogDao" class=" cn.submsg.member.dao.MsgDeleverLogDao"></bean>
       
+      <bean id="payMentOrderDao" class=" cn.submsg.member.dao.PayMentOrderDao"></bean>
+      
       <bean id="memberService" class=" cn.submsg.member.service.MemberService"></bean>
       <bean id="mailTempService" class=" cn.submsg.member.service.MailTempService"></bean>
-      
-      
+      <bean id="payMentService" class=" cn.submsg.member.service.PayMentService"></bean>
 </beans>

@@ -230,7 +230,9 @@ public class GenEntityMysql {
 	public static void main(String[] args) {
 //		String[] tableNames = new String[]{"api_req_error_log","member","member_company","member_message_sign","member_message_temp","member_msg_info","member_project","msg_send_log"};//表名
 //		String[] tableNames = new String[]{"mall_products"};
-		String[] tableNames = new String[]{"member_verify"};
+//		String[] tableNames = new String[]{"member_verify"};
+//		String[] tableNames = new String[]{"payment_order"};
+		String[] tableNames = new String[]{"member_invoice"};
 		for(int i=0;i<tableNames.length;i++){
 			new GenEntityMysql(tableNames[i]);
 		}

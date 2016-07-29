@@ -62,6 +62,11 @@ public class MemberService {
 	}
 	
 	
+	public MallProducts getProductById(int id){
+		return mallProductDao.get(new SqlParamBean("id", id));
+	}
+	
+	
 	/**
 	 * 查询用户名及用户
 	 * @param userName
