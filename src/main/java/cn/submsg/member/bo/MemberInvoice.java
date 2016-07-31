@@ -24,6 +24,25 @@ public class MemberInvoice{
 	private String address;
 	private String phone;
 	private Date createdTime;
+	
+	
+	public MemberInvoice(){
+		id=1;
+		invoiceName="发票抬头";
+		taxpayerTag="税务编号";
+		comAddress="公司注册地址";
+		comPhone="公司电话";
+		comBankName="公司开户行";
+		comBankAccount="开户行帐号";
+		firstName="孟";
+		secondName="潮";
+		provice="湖南";
+		city="长沙";
+		area="宁乡县";
+		address="地址";
+		phone="电话";
+	}
+	
 	public void setId(Integer id){
 	this.id=id;
 	}
