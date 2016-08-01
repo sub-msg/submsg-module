@@ -2,12 +2,14 @@ package cn.submsg.member.service;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.sr178.common.jdbc.bean.SqlParamBean;
 import com.sr178.game.framework.exception.ServiceException;
+import com.sr178.module.utils.ParamCheck;
 
 import cn.submsg.member.bo.MallProducts;
 import cn.submsg.member.bo.Member;
@@ -34,6 +36,15 @@ public class PayMentService {
     //订单序列号
     private AtomicInteger sequence = new AtomicInteger(1000);
     
+    
+    /**
+     * 查询订单信息
+     * @param orderId
+     * @return
+     */
+    public PaymentOrder getPayMentOrderByOrderId(String orderId){
+    	return payMentOrderDao.get(new SqlParamBean("order_id", orderId));
+    }
     /**
      * 创建订单
      * @param userId
@@ -80,5 +91,87 @@ public class PayMentService {
     	orderNum = orderNum+num;
     	return orderNum;
     }
+    
+    /**
+     * 修改或创建发票信息
+     * @param userId
+     * @param invoiceId
+     * @param type
+     * @param title
+     * @param lastname
+     * @param firstname
+     * @param provice
+     * @param city
+     * @param area
+     * @param address
+     * @param mob
+     * @param s_address
+     * @param s_mob
+     * @param s_bank
+     * @param s_account
+     * @param s_taxcode
+     */
+	public void createOrEditInvoice(int userId, int invoiceId, String type, String title, String lastname,
+			String firstname, String provice, String city, String area, String address, String mob, String s_address,
+			String s_mob, String s_bank, String s_account, String s_taxcode) {
+		ParamCheck.checkString(title, 1, "发票抬头不能为空");
+		ParamCheck.checkString(lastname, 2, "名不能为空");
+		ParamCheck.checkString(firstname, 3, "姓不能为空");
+		ParamCheck.checkString(provice, 4, "省不能为空");
+		ParamCheck.checkString(city, 5, "市不能为空");
+		ParamCheck.checkString(area, 6, "县区不能为空");
+		ParamCheck.checkString(address, 7, "地址不能为空");
+		ParamCheck.checkString(mob, 8, "联系电话不能为空");
+    	if(invoiceId==0){//创建
+    		MemberInvoice memberInvoice = null;
+    		if(type.equals("0")){//普通发票
+    			memberInvoice = new MemberInvoice(userId, title, 1, firstname, lastname, provice, city, area, address, mob, new Date());
+    		}else{
+    			ParamCheck.checkString(s_taxcode, 9, "税务标识不能为空");
+    			ParamCheck.checkString(s_address, 10, "公司地址不能为空");
+    			ParamCheck.checkString(s_mob, 11, "公司联系电话不能为空");
+    			ParamCheck.checkString(s_bank, 12, "公司开户行不能为空");
+    			ParamCheck.checkString(s_account, 13, "公司对公账号不能为空");
+    			memberInvoice = new MemberInvoice(userId, title, 2, s_taxcode, s_address, s_mob, s_bank, s_account, firstname, lastname, provice, city, area, address, mob, new Date());
+    		}
+    		if(!memberInvoiceDao.add(memberInvoice)){
+    			throw new ServiceException(14, "添加发票信息失败！");
+    		}
+    	}else{
+    		if(type.equals("0")){//普通发票
+    			if(!memberInvoiceDao.updateCommonInvoice(invoiceId, userId, title, lastname, firstname, provice, city, area, address, mob)){
+    				throw new ServiceException(15, "更新发票信息失败！");
+    			}
+    		}else{
+    			if(!memberInvoiceDao.updateSpecialInvoice(invoiceId, userId,  title, lastname, firstname, provice, city, area, address, mob, s_address, s_mob, s_bank, s_account, s_taxcode)){
+    				throw new ServiceException(15, "更新发票信息失败！");
+    			}
+    		}
+    	}
+    }
+	
+	/**
+	 * 获取用户发票信息列表
+	 * @param userId
+	 * @return
+	 */
+	public List<MemberInvoice> getUserInvoiceList(int userId){
+		return memberInvoiceDao.getList(new SqlParamBean("user_id", userId));
+	}
+	/**
+	 * 获取单个用户发票信息
+	 * @param id
+	 * @return
+	 */
+	public MemberInvoice getInvoiceById(int id){
+		return memberInvoiceDao.get(new SqlParamBean("id", id));
+	}
+	/**
+	 * 删除
+	 * @param id
+	 */
+	public boolean deleteInvoiceById(int id,int userId){
+		return memberInvoiceDao.delete(new SqlParamBean("id", id),new SqlParamBean("and", "user_id", userId));
+	}
 
 }

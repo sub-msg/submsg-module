@@ -26,22 +26,22 @@ public class MemberInvoice{
 	private Date createdTime;
 	
 	
-	public MemberInvoice(){
-		id=1;
-		invoiceName="发票抬头";
-		taxpayerTag="税务编号";
-		comAddress="公司注册地址";
-		comPhone="公司电话";
-		comBankName="公司开户行";
-		comBankAccount="开户行帐号";
-		firstName="孟";
-		secondName="潮";
-		provice="湖南";
-		city="长沙";
-		area="宁乡县";
-		address="地址";
-		phone="电话";
-	}
+//	public MemberInvoice(){
+//		id=1;
+//		invoiceName="发票抬头";
+//		taxpayerTag="税务编号";
+//		comAddress="公司注册地址";
+//		comPhone="公司电话";
+//		comBankName="公司开户行";
+//		comBankAccount="开户行帐号";
+//		firstName="孟";
+//		secondName="潮";
+//		provice="湖南";
+//		city="长沙";
+//		area="宁乡县";
+//		address="地址";
+//		phone="电话";
+//	}
 	
 	public void setId(Integer id){
 	this.id=id;
@@ -144,6 +144,45 @@ public class MemberInvoice{
 	}
 	public Date getCreatedTime(){
 		return createdTime;
+	}
+	public MemberInvoice(Integer userId, String invoiceName, Integer invoiceType, String taxpayerTag, String comAddress,
+			String comPhone, String comBankName, String comBankAccount, String firstName, String secondName,
+			String provice, String city, String area, String address, String phone, Date createdTime) {
+		super();
+		this.userId = userId;
+		this.invoiceName = invoiceName;
+		this.invoiceType = invoiceType;
+		this.taxpayerTag = taxpayerTag;
+		this.comAddress = comAddress;
+		this.comPhone = comPhone;
+		this.comBankName = comBankName;
+		this.comBankAccount = comBankAccount;
+		this.firstName = firstName;
+		this.secondName = secondName;
+		this.provice = provice;
+		this.city = city;
+		this.area = area;
+		this.address = address;
+		this.phone = phone;
+		this.createdTime = createdTime;
+	}
+	public MemberInvoice() {
+		super();
+	}
+	public MemberInvoice(Integer userId, String invoiceName, Integer invoiceType, String firstName, String secondName,
+			String provice, String city, String area, String address, String phone, Date createdTime) {
+		super();
+		this.userId = userId;
+		this.invoiceName = invoiceName;
+		this.invoiceType = invoiceType;
+		this.firstName = firstName;
+		this.secondName = secondName;
+		this.provice = provice;
+		this.city = city;
+		this.area = area;
+		this.address = address;
+		this.phone = phone;
+		this.createdTime = createdTime;
 	}
 }
 
