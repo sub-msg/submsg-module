@@ -1,13 +1,18 @@
 package cn.submsg.member.service;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.mail.MessagingException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.sr178.common.jdbc.bean.IPage;
 import com.sr178.common.jdbc.bean.SqlParamBean;
 import com.sr178.game.framework.exception.ServiceException;
 import com.sr178.game.framework.log.LogSystem;
@@ -317,6 +322,41 @@ public class MemberService {
 	 */
 	public List<MsgTempBean> getUserMsgTempList(int userId,int limit){
 		return memberMessageTempDao.getMsgTempBeanList(userId,limit);
+	}
+	
+
+	/**
+	 * 获取用户模版列表 各种条件
+	 * @param userId
+	 * @param pageSize
+	 * @param pageIndex
+	 * @param tag
+	 * @param searchString
+	 * @return
+	 */
+	private static Map<String,Integer> statusTagMap = Maps.newHashMap();
+	{
+		//all 所有 unsendverify 没有送审的 verifying 正在送审核的  verifyed 审核通过的  unverifyed 审核不通过的
+		statusTagMap.put("unsendverify", 0);
+		statusTagMap.put("verifying", -1);
+		statusTagMap.put("unverifyed", -2);
+		statusTagMap.put("verifyed", 1);
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public List<MsgTempBean> getUserMsgTempListByPage(int userId,int pageSize,int pageIndex,String tag,String searchString){
+		boolean isAll = false;
+		int status = 0;
+		if(tag.equals("all")){
+			isAll = true;
+		}else{
+			status = statusTagMap.get(tag);
+		}
+		IPage<MsgTempBean> page = memberMessageTempDao.getMsgTempBeanPageList(userId, isAll, status, pageSize, pageIndex,searchString);
+		if(page!=null){
+			return (List)page.getData();
+		}
+		return Lists.newArrayList();
 	}
 	/**
 	 * 获取用户应用列表

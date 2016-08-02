@@ -112,13 +112,13 @@ public class ApiService {
 		}
 		//查询出模板id
 		MemberMessageTemp  messageTemp = memberMessageTempDao.get(new SqlParamBean("temp_id", tempId));
-		if(messageTemp==null||messageTemp.getTempStatus().intValue()==MsgContentUtils.STATUS_NOT||messageTemp.getUserId().intValue()!=memberProject.getUserId().intValue()||messageTemp.getAppId().intValue()!=messageTemp.getAppId().intValue()){
+		if(messageTemp==null||messageTemp.getTempStatus().intValue()!=MsgContentUtils.STATUS_OK||messageTemp.getUserId().intValue()!=memberProject.getUserId().intValue()||messageTemp.getAppId().intValue()!=messageTemp.getAppId().intValue()){
 //			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "4", "无效的模板id"+tempId, ip);
 			throw new ServiceException(4,"无效的模板id"+tempId);
 		}
 		//消息签名
 		MemberMessageSign messageSign = memberMessageSignDao.get(new SqlParamBean("id", messageTemp.getSignId()));
-		if(messageSign==null||messageSign.getSignStatus().intValue()==MsgContentUtils.STATUS_NOT||messageSign.getUserId().intValue()!=memberProject.getUserId().intValue()){
+		if(messageSign==null||messageSign.getSignStatus().intValue()!=MsgContentUtils.STATUS_OK||messageSign.getUserId().intValue()!=memberProject.getUserId().intValue()){
 //			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "5", "无效的签名id"+messageTemp.getSignId(), ip);
 			throw new ServiceException(5,"无效的签名id"+messageTemp.getSignId());
 		}
