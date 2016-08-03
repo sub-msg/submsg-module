@@ -1,9 +1,9 @@
 package cn.submsg.member.service;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javax.mail.MessagingException;
 
@@ -24,16 +24,20 @@ import cn.submsg.common.listener.VerifyLisner;
 import cn.submsg.member.bean.MsgTempBean;
 import cn.submsg.member.bo.MallProducts;
 import cn.submsg.member.bo.Member;
+import cn.submsg.member.bo.MemberMessageSign;
+import cn.submsg.member.bo.MemberMessageTemp;
 import cn.submsg.member.bo.MemberMsgInfo;
 import cn.submsg.member.bo.MemberProject;
 import cn.submsg.member.bo.MemberVerify;
 import cn.submsg.member.constant.VerifyType;
 import cn.submsg.member.dao.MallProductDao;
 import cn.submsg.member.dao.MemberDao;
+import cn.submsg.member.dao.MemberMessageSignDao;
 import cn.submsg.member.dao.MemberMessageTempDao;
 import cn.submsg.member.dao.MemberMsgInfoDao;
 import cn.submsg.member.dao.MemberProjectDao;
 import cn.submsg.member.dao.MemberVerifyDao;
+import cn.submsg.message.utils.MsgContentUtils;
 
 public class MemberService {
     @Autowired
@@ -58,6 +62,8 @@ public class MemberService {
     private MemberMessageTempDao memberMessageTempDao;
     @Autowired
     private MemberProjectDao memberProjectDao;
+    @Autowired
+    private MemberMessageSignDao memberMessageSignDao;
     /**
      * 获取所有产品列表
      * @return
@@ -359,6 +365,112 @@ public class MemberService {
 		return Lists.newArrayList();
 	}
 	/**
+	 * 更新模板标题
+	 * @param userId
+	 * @param tempId
+	 * @param tempTitle
+	 */
+	public void updateTempTitle(int userId,String tempId,String tempTitle){
+		if(!memberMessageTempDao.updateTempTitle(userId, tempId, tempTitle)){
+			throw new ServiceException(1, "更新失败");
+		}
+	}
+	/**
+	 * 删除模板
+	 * @param userId
+	 * @param tempId
+	 */
+	public void deleteTempByTempId(int userId,String tempId){
+		if(!memberMessageTempDao.deleteTempByTempId(userId, tempId)){
+			throw new ServiceException(1, "更新失败");
+		}
+	}
+	/**
+	 * 添加短信模板
+	 * @param userId
+	 * @param signId
+	 * @param tempContent
+	 * @param appId
+	 */
+	public void addTemp(int userId, int signId, String tempContent,int tempStatus) {
+		MemberMessageSign sign = memberMessageSignDao.get(new SqlParamBean("id", signId),
+				new SqlParamBean("and", "user_id", userId));
+		if (sign == null) {
+			throw new ServiceException(2, "无效的签名id");
+		}
+		MemberMessageTemp memberMessageTemp = new MemberMessageTemp();
+		memberMessageTemp.setAppId(0);
+		memberMessageTemp.setCreatedTime(new Date());
+		memberMessageTemp.setSignId(signId);
+		memberMessageTemp.setTempContent(tempContent);
+		memberMessageTemp.setTempId(getStringRandom(6));
+		if (tempStatus == 0 || tempStatus == -1) {
+			memberMessageTemp.setTempStatus(tempStatus);
+		} else {
+			memberMessageTemp.setTempStatus(0);
+		}
+		memberMessageTemp.setUpdatedTime(new Date());
+		memberMessageTemp.setUserId(userId);
+
+		if (!memberMessageTempDao.add(memberMessageTemp)) {
+			throw new ServiceException(3, "添加短信模板失败");
+		}
+	}
+	/**
+	 * 添加短信模板
+	 * @param userId
+	 * @param signId
+	 * @param tempContent
+	 * @param appId
+	 */
+	public void editTemp(String tempId,int userId, int signId, String tempContent,  int tempStatus) {
+		MemberMessageSign sign = memberMessageSignDao.get(new SqlParamBean("id", signId),
+				new SqlParamBean("and", "user_id", userId));
+		if (sign == null) {
+			throw new ServiceException(2, "无效的签名id");
+		}
+		
+		MemberMessageTemp memberMessageTemp = memberMessageTempDao.get(new SqlParamBean("temp_id", tempId),
+				new SqlParamBean("and", "user_id", userId));
+		if(memberMessageTemp==null){
+			throw new ServiceException(3, "无效的模板id");
+		}
+		
+		if (tempStatus != 0 && tempStatus != -1) {
+			tempStatus = 0;
+		}
+		if(!memberMessageTempDao.updateTemp(tempId, userId, tempContent, signId, tempStatus)){
+			throw new ServiceException(3, "更新短信模板失败");
+		}
+	}
+	/**
+	 * 获取用户
+	 * @param userId
+	 * @param tempId
+	 * @return
+	 */
+	public MsgTempBean getMsgTempBean(int userId,String tempId){
+		return memberMessageTempDao.getMsgTempBean(userId, tempId);
+	}
+	//生成随机数字和字母,  
+    public static String getStringRandom(int length) {  
+        String val = "";  
+        Random random = new Random();  
+        //参数length，表示生成几位随机数  
+        for(int i = 0; i < length; i++) {  
+            String charOrNum = random.nextInt(2) % 2 == 0 ? "char" : "num";  
+            //输出字母还是数字  
+            if( "char".equalsIgnoreCase(charOrNum) ) {  
+                //输出是大写字母还是小写字母  
+                int temp = random.nextInt(2) % 2 == 0 ? 65 : 97;  
+                val += (char)(random.nextInt(26) + temp);  
+            } else if( "num".equalsIgnoreCase(charOrNum) ) {  
+                val += String.valueOf(random.nextInt(10));  
+            }  
+        }  
+        return val;  
+    }  
+	/**
 	 * 获取用户应用列表
 	 * @param userId
 	 * @return
@@ -434,11 +546,65 @@ public class MemberService {
 			throw new ServiceException(1,"发生了错误");
 		}
 	}
+	/**
+	 * 获取用户所有签名
+	 * @param userId
+	 * @return
+	 */
+	public List<MemberMessageSign> getMemberSignList(int userId){
+		return memberMessageSignDao.getList(new SqlParamBean("user_id", userId));
+	}
 	
+	/**
+	 * 添加签名
+	 * @param userId
+	 * @param signContent
+	 * @return
+	 */
+	public void addMemberSign(int userId,String signContent){
+		
+		List<MemberMessageSign> signList = memberMessageSignDao.getList(new SqlParamBean("user_id", userId));
+		if(signList.size()>=10){
+			throw new ServiceException(3,"每个用户签名数不能超过10个");
+		}
+		
+		MemberMessageSign sign = memberMessageSignDao.get(new SqlParamBean("sign_content", signContent));
+		MemberMessageSign signNew = new MemberMessageSign();
+		signNew.setUserId(userId);
+		signNew.setSignContent(signContent);
+		signNew.setCreatedTime(new Date());
+		signNew.setUpdatedTime(new Date());
+		signNew.setSignPosition(0);
+		signNew.setSignStatus(MsgContentUtils.STATUS_NOT);
+		if(sign!=null){//已经存在了
+			if(sign.getUserId().intValue()==userId){
+				throw new ServiceException(1,"签名已经存在，请不要重复添加");
+			}
+			signNew.setSignNum(sign.getSignNum());
+			signNew.setSignStatus(sign.getSignStatus());
+		}
+		if(!memberMessageSignDao.add(signNew)){
+			throw new ServiceException(2,"签名添加失败");
+		}
+	}
+	/**
+	 * 删除签名
+	 * @param userId
+	 * @param signId
+	 */
+	public void deleteMemberSign(int userId,int signId){
+		if(!memberMessageSignDao.delete(new SqlParamBean("id", signId),new SqlParamBean("and", "user_id", userId))){
+			throw new ServiceException(1,"签名删除失败");
+		}
+	}
+
 	
 	
 	public static void main(String[] args) {
-		String cc= "xxxxxx${code}";
-		System.out.println(cc.replace("${code}", "1223"));
+//		String cc= "xxxxxx${code}";
+//		System.out.println(cc.replace("${code}", "1223"));
+		for(int i=0;i<100;i++){
+			System.out.println(getStringRandom(6));
+		}
 	}
 }
