@@ -4,6 +4,7 @@ import java.util.Date;
 
 
 import com.sr178.common.jdbc.SqlParameter;
+import com.sr178.common.jdbc.bean.IPage;
 
 import cn.submsg.common.dao.SubMsgBaseDao;
 import cn.submsg.member.bo.MsgSendLog;
@@ -43,5 +44,19 @@ public class MsgSendLogDao extends SubMsgBaseDao<MsgSendLog> {
 		String sql = "update "+super.getTable()+" set send_time=?,status="+MsgSendLog.ST_SEND+" where send_id=? limit 1";
 		boolean result =  this.getJdbc().update(sql, SqlParameter.Instance().withObject(sendTime).withString(sendId))>0;
 		return result;
+	}
+	
+	/**
+	 * 按页查询消息日志
+	 * @param userId
+	 * @param pageSize
+	 * @param pageIndex
+	 * @param startTime
+	 * @param endTime
+	 * @return
+	 */
+	public IPage<MsgSendLog> getMsgSendLogPage(int userId,int pageSize,int pageIndex,String startTime,String endTime){
+		String sql = "select * from "+super.getTable()+" where user_id=? and req_time between ? and ?";
+		return this.getJdbc().getListPage(sql, MsgSendLog.class, SqlParameter.Instance().withInt(userId).withString(startTime).withString(endTime), pageSize, pageIndex);
 	}
 }
