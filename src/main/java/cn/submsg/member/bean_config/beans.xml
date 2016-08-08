@@ -35,6 +35,10 @@
       <bean id="payMentOrderDao" class="cn.submsg.member.dao.PayMentOrderDao"></bean>
       <bean id="memberInvoiceDao" class="cn.submsg.member.dao.MemberInvoiceDao"></bean>
       
+      <bean id="docDao" class="cn.submsg.member.dao.DocDao"></bean>
+      
+      <bean id="docReplyDao" class="cn.submsg.member.dao.DocReplyDao"></bean>
+      <bean id="docService" class="cn.submsg.member.service.DocService"></bean>
       <bean id="memberService" class="cn.submsg.member.service.MemberService"></bean>
       <bean id="mailTempService" class="cn.submsg.member.service.MailTempService"></bean>
       <bean id="payMentService" class="cn.submsg.member.service.PayMentService"></bean>

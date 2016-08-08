@@ -23,8 +23,8 @@ public class GenEntityMysql {
     
     //数据库连接
 	private static final String URL ="jdbc:mysql://localhost:3306/submsg-member";
-	private static final String NAME = "yquser";
-	private static final String PASS = "yquser@123";
+	private static final String NAME = "root";
+	private static final String PASS = "252493618";
 	private static final String DRIVER ="com.mysql.jdbc.Driver";
 	/*
 	 * 构造函数
@@ -232,7 +232,8 @@ public class GenEntityMysql {
 //		String[] tableNames = new String[]{"mall_products"};
 //		String[] tableNames = new String[]{"member_verify"};
 //		String[] tableNames = new String[]{"payment_order"};
-		String[] tableNames = new String[]{"member_invoice"};
+//		String[] tableNames = new String[]{"member_invoice"};
+		String[] tableNames = new String[]{"doc","doc_reply"};
 		for(int i=0;i<tableNames.length;i++){
 			new GenEntityMysql(tableNames[i]);
 		}
