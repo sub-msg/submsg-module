@@ -13,6 +13,8 @@ public class Doc{
 	private String docContnet;
 	private Integer type;
 	private int orderNum;
+	private int level;
+	private int parentId;
 	private String adminUser;
 	private Date updatedTime;
 	private Date createdTime;
@@ -70,6 +72,17 @@ public class Doc{
 	public void setOrderNum(int orderNum) {
 		this.orderNum = orderNum;
 	}
-	
+	public int getLevel() {
+		return level;
+	}
+	public void setLevel(int level) {
+		this.level = level;
+	}
+	public int getParentId() {
+		return parentId;
+	}
+	public void setParentId(int parentId) {
+		this.parentId = parentId;
+	}
 }
 
