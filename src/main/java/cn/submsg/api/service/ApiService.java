@@ -69,6 +69,12 @@ public class ApiService {
     
 	public SendMessageResult sendMsg(String appId, String tempId,String to,String timestamp, String signature, String sign_type, String vars,String apiName,String ip){
 		SendMessageResult apiResult = new SendMessageResult();
+		if(Strings.isNullOrEmpty(timestamp)){
+			throw new ServiceException(8,"时间戳不能为空！");
+		}
+		if(Strings.isNullOrEmpty(sign_type)){
+			sign_type = TYPE_NORMAL;
+		}
 		//查询出应用id
 		MemberProject memberProject = memberProjectDao.get(new SqlParamBean("id", Integer.valueOf(appId)));
 		if(memberProject==null){
@@ -127,7 +133,7 @@ public class ApiService {
 		int fee = MsgContentUtils.getFeeNum(msgContent);
 		if(!memberMsgInfoDao.reduceMsgNum(memberProject.getUserId(), fee)){
 //			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "6", "发送许可数量不足！", ip);
-			throw new ServiceException(6,"发送许可数量不足！");
+			throw new ServiceException(6,"发送服务数量不足！");
 		}
 		
 		
@@ -145,7 +151,7 @@ public class ApiService {
 		MsgBean msgBean = new MsgBean(sendId,to, msgContent, messageSign.getSignNum());
 		if(!messageQueueService.pushReqMsg(msgBean)){
 //			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "8", "队列添加失败！", ip);
-			throw new ServiceException(8,"队列添加失败！");
+			throw new ServiceException(10,"队列添加失败！");
 		}
 		
 		
