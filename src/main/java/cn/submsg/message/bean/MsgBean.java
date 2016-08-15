@@ -8,6 +8,8 @@ public class MsgBean {
 
 	private String sendId;
 	private String to;//发送目标手机号
+	private String tempId;
+	private String vars;
 	private String content;//内容
 	private String signNum;//签名的端口号
 	private int status;
@@ -41,7 +43,7 @@ public class MsgBean {
 	public void setSendId(String sendId) {
 		this.sendId = sendId;
 	}
-	public MsgBean(String sendId, String to, String content, String signNum) {
+	public MsgBean(String sendId, String to, String content, String signNum,String tempId,String vars) {
 		super();
 		this.sendId = sendId;
 		this.to = to;
@@ -49,6 +51,8 @@ public class MsgBean {
 		this.signNum = signNum;
 		this.status = MsgSendLog.ST_CREATE;
 		this.reqTime = new Date();
+		this.tempId = tempId;
+		this.vars = vars;
 	}
 	public MsgBean() {
 		super();
@@ -88,6 +92,19 @@ public class MsgBean {
 	}
 	public void setStatus(int status) {
 		this.status = status;
+	}
+	public String getTempId() {
+		return tempId;
+	}
+	public void setTempId(String tempId) {
+		this.tempId = tempId;
+	}
+
+	public String getVars() {
+		return vars;
+	}
+	public void setVars(String vars) {
+		this.vars = vars;
 	}
 	@Override
 	public String toString() {

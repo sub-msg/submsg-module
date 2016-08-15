@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Strings;
 import com.sr178.common.jdbc.bean.SqlParamBean;
 import com.sr178.game.framework.exception.ServiceException;
+import com.sr178.module.sms.util.SubMailSendUtils;
 import com.sr178.module.utils.MD5Security;
 
 import cn.submsg.api.bean.SendMessageResult;
@@ -148,7 +149,7 @@ public class ApiService {
 			throw new ServiceException(9,"日志添加失败！");
 		}
 		
-		MsgBean msgBean = new MsgBean(sendId,to, msgContent, messageSign.getSignNum());
+		MsgBean msgBean = new MsgBean(sendId,to, msgContent, messageSign.getSignNum(),tempId,vars);
 		if(!messageQueueService.pushReqMsg(msgBean)){
 //			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "8", "队列添加失败！", ip);
 			throw new ServiceException(10,"队列添加失败！");
@@ -158,6 +159,18 @@ public class ApiService {
 		apiResult.setFee(fee);
 		apiResult.setMsgNum(memberMsgInfo.getMsgNum());
 		apiResult.setSendId(sendId);
+		return apiResult;
+	}
+	/**
+	 * 直接通过submail来发送国内短信
+	 * @param to
+	 * @param tempId
+	 * @param param
+	 * @return
+	 */
+	public SendMessageResult sendMsgBySubMail(String to,String tempId,Map<String,String> param){
+		SendMessageResult apiResult = new SendMessageResult();
+		SubMailSendUtils.sendMessage(to, tempId, param);
 		return apiResult;
 	}
 	/**
