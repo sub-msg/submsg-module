@@ -25,6 +25,8 @@ public class MsgSendLog{
 	private Integer bill;
 	//发到的手机号
 	private String toMobile;
+	//0 移动卓望    1 submail
+	private int sendType;
 	//状态
 	private Integer status;
 	//去请求时间
@@ -140,8 +142,14 @@ public class MsgSendLog{
 	public void setSendTime(Date sendTime) {
 		this.sendTime = sendTime;
 	}
+	public int getSendType() {
+		return sendType;
+	}
+	public void setSendType(int sendType) {
+		this.sendType = sendType;
+	}
 	public MsgSendLog(Integer userId, Integer projectId, String sendId,  String apiName, String msgContent,
-			String msgSign, Integer bill, String toMobile, Integer status, Date reqTime, Date createdTime) {
+			String msgSign, Integer bill, String toMobile,int sendType, Integer status, Date reqTime, Date createdTime) {
 		super();
 		this.userId = userId;
 		this.projectId = projectId;
@@ -151,6 +159,7 @@ public class MsgSendLog{
 		this.msgSign = msgSign;
 		this.bill = bill;
 		this.toMobile = toMobile;
+		this.sendType = sendType;
 		this.status = status;
 		this.reqTime = reqTime;
 		this.createdTime = createdTime;

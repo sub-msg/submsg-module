@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Strings;
 import com.sr178.common.jdbc.bean.SqlParamBean;
 import com.sr178.game.framework.exception.ServiceException;
-import com.sr178.module.sms.util.SubMailSendUtils;
 import com.sr178.module.utils.MD5Security;
 
 import cn.submsg.api.bean.SendMessageResult;
@@ -27,6 +26,7 @@ import cn.submsg.member.dao.MemberMessageSignDao;
 import cn.submsg.member.dao.MemberMessageTempDao;
 import cn.submsg.member.dao.MemberMsgInfoDao;
 import cn.submsg.member.dao.MemberProjectDao;
+import cn.submsg.member.dao.MsgInternationalDataDao;
 import cn.submsg.member.dao.MsgSendLogDao;
 import cn.submsg.message.bean.MsgBean;
 import cn.submsg.message.service.MessageQueueService;
@@ -47,6 +47,8 @@ public class ApiService {
 	private MsgSendLogDao msgSendLogDao;
 	@Autowired
 	private MessageQueueService messageQueueService;
+    @Autowired
+    private MsgInternationalDataDao msgInternationalDataDao;
 	
 	
 	public static final String TO = "to";
@@ -67,8 +69,24 @@ public class ApiService {
 	public static final String TYPE_NORMAL = "normal";
 	public static final String TYPE_MD5 = "md5";
 	public static final String TYPE_SHA1 = "sha1";
-    
-	public SendMessageResult sendMsg(String appId, String tempId,String to,String timestamp, String signature, String sign_type, String vars,String apiName,String ip){
+    /**
+     * 发送国内短信
+     * @param appId
+     * @param tempId
+     * @param to
+     * @param timestamp
+     * @param signature
+     * @param sign_type
+     * @param vars
+     * @param apiName
+     * @param ip
+     * @return
+     */
+	public SendMessageResult sendMsg(String appId, String tempId,String to,String timestamp, String signature, String sign_type, String vars,String apiName,String ip,int sendType){
+		//默认卓望  该字段为测试字段
+		if(sendType==0){
+			sendType = MsgContentUtils.SENDTYPE_ZW;
+		}
 		SendMessageResult apiResult = new SendMessageResult();
 		if(Strings.isNullOrEmpty(timestamp)){
 			throw new ServiceException(8,"时间戳不能为空！");
@@ -112,10 +130,16 @@ public class ApiService {
 				throw new ServiceException(7,"ip不在白名单内："+ip+",whiteIp=["+memberProject.getWhiteIp()+"]");
 			}
 		}
+		//将+86字符替换掉
+		if(to.indexOf("+86")!=-1){
+			to = to.replace("+86", "");
+		}
 		//校验手机号码
-		if(!isMobile(to)){
-//			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "3", "手机号码不符合规则"+to, ip);
-			throw new ServiceException(3,"手机号码不符合规则"+to);
+		if(to.indexOf("+")==-1){//国际短信  不校验并且发送模式
+			if(!isMobile(to)){
+//				addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "3", "手机号码不符合规则"+to, ip);
+				throw new ServiceException(3,"手机号码不符合规则"+to);
+			}
 		}
 		//查询出模板id
 		MemberMessageTemp  messageTemp = memberMessageTempDao.get(new SqlParamBean("temp_id", tempId));
@@ -136,41 +160,135 @@ public class ApiService {
 //			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "6", "发送许可数量不足！", ip);
 			throw new ServiceException(6,"发送服务数量不足！");
 		}
-		
-		
 		MemberMsgInfo memberMsgInfo = memberMsgInfoDao.get(new SqlParamBean("user_id", memberProject.getUserId()));
 		//将发送请求加入到消息队列中
-		
 		//写入日志
 		String sendId = MD5Security.md5_32_Small(System.nanoTime()+"");
 		
-		MsgSendLog msgSendLog = new MsgSendLog(memberProject.getUserId(), memberProject.getId(), sendId, apiName, msgContent, messageSign.getSignContent(), fee, to, MsgSendLog.ST_CREATE, new Date(), new Date());
+		MsgSendLog msgSendLog = new MsgSendLog(memberProject.getUserId(), memberProject.getId(), sendId, apiName, msgContent, messageSign.getSignContent(), fee, to,sendType, MsgSendLog.ST_CREATE, new Date(), new Date());
 		if(!msgSendLogDao.add(msgSendLog)){
 			throw new ServiceException(9,"日志添加失败！");
 		}
-		
-		MsgBean msgBean = new MsgBean(sendId,to, msgContent, messageSign.getSignNum(),tempId,vars);
+		MsgBean msgBean = new MsgBean(sendId,to, msgContent, messageSign.getSignNum(),tempId,vars,sendType);
 		if(!messageQueueService.pushReqMsg(msgBean)){
 //			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "8", "队列添加失败！", ip);
 			throw new ServiceException(10,"队列添加失败！");
 		}
-		
-		
 		apiResult.setFee(fee);
 		apiResult.setMsgNum(memberMsgInfo.getMsgNum());
 		apiResult.setSendId(sendId);
 		return apiResult;
 	}
-	/**
-	 * 直接通过submail来发送国内短信
-	 * @param to
-	 * @param tempId
-	 * @param param
-	 * @return
-	 */
-	public SendMessageResult sendMsgBySubMail(String to,String tempId,Map<String,String> param){
+
+	
+    /**
+     * 发送国内短信
+     * @param appId
+     * @param tempId
+     * @param to
+     * @param timestamp
+     * @param signature
+     * @param sign_type
+     * @param vars
+     * @param apiName
+     * @param ip
+     * @return
+     */
+	public SendMessageResult sendMsgInternational(String appId, String regionCode,String tempId,String to,String timestamp, String signature, String sign_type, String vars,String apiName,String ip,int sendType){
+		//默认卓望  该字段为测试字段
+		if(sendType==0){
+			sendType = MsgContentUtils.SENDTYPE_ZW;
+		}
 		SendMessageResult apiResult = new SendMessageResult();
-		SubMailSendUtils.sendMessage(to, tempId, param);
+		if(Strings.isNullOrEmpty(timestamp)){
+			throw new ServiceException(8,"时间戳不能为空！");
+		}
+		if(Strings.isNullOrEmpty(sign_type)){
+			sign_type = TYPE_NORMAL;
+		}
+		//查询出应用id
+		MemberProject memberProject = memberProjectDao.get(new SqlParamBean("id", Integer.valueOf(appId)));
+		if(memberProject==null){
+			throw new ServiceException(1000,"无效的appid="+appId);
+		}
+		//是否过期
+		if(System.currentTimeMillis()-Long.valueOf(timestamp)>6000){
+			throw new ServiceException(1,"该消息已过期，时间超过6s");
+		}
+		//签名校验
+		Map<String,Object> data = new TreeMap<String,Object>();
+		data.put(TO, to);
+		data.put(PROJECT, tempId);
+		data.put(VARS, vars);
+		data.put(APPID, appId);
+		data.put(TIMESTAMP, timestamp);
+		data.put(SIGN_TYPE, sign_type);
+		String serverSign = createSignature(sign_type, data, appId, memberProject.getProjectKey());
+		if(!serverSign.equals(signature)){
+//			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "2", "签名校验不正确", ip);
+			throw new ServiceException(2,"签名校验不正确，serverSign=["+serverSign+"],clientSign = ["+signature+"]");
+		}
+		//校验ip白名单
+		if(!Strings.isNullOrEmpty(memberProject.getWhiteIp())){
+			String[] whiteIps = memberProject.getWhiteIp().split(";");
+			boolean isCross = false;
+			for(String whiteIp:whiteIps){
+				if(whiteIp.equals(ip)){
+					isCross = true;
+				}
+			}
+			if(!isCross){
+//				addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "7", "ip不在白名单内："+ip+",whiteIp=["+memberProject.getWhiteIp()+"]", ip);
+				throw new ServiceException(7,"ip不在白名单内："+ip+",whiteIp=["+memberProject.getWhiteIp()+"]");
+			}
+		}
+		//将+86字符替换掉
+		if(to.indexOf("+86")!=-1){
+			to = to.replace("+86", "");
+		}
+		//校验手机号码
+		if(to.indexOf("+")==-1){//国际短信  不校验并且发送模式
+			if(!isMobile(to)){
+//				addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "3", "手机号码不符合规则"+to, ip);
+				throw new ServiceException(3,"手机号码不符合规则"+to);
+			}
+		}
+		//查询出模板id
+		MemberMessageTemp  messageTemp = memberMessageTempDao.get(new SqlParamBean("temp_id", tempId));
+		if(messageTemp==null||messageTemp.getTempStatus().intValue()!=MsgContentUtils.STATUS_OK||messageTemp.getUserId().intValue()!=memberProject.getUserId().intValue()||messageTemp.getAppId().intValue()!=messageTemp.getAppId().intValue()){
+//			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "4", "无效的模板id"+tempId, ip);
+			throw new ServiceException(4,"无效的模板id"+tempId);
+		}
+		//消息签名
+		MemberMessageSign messageSign = memberMessageSignDao.get(new SqlParamBean("id", messageTemp.getSignId()));
+		if(messageSign==null||messageSign.getSignStatus().intValue()!=MsgContentUtils.STATUS_OK||messageSign.getUserId().intValue()!=memberProject.getUserId().intValue()){
+//			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "5", "无效的签名id"+messageTemp.getSignId(), ip);
+			throw new ServiceException(5,"无效的签名id"+messageTemp.getSignId());
+		}
+		//减发送许可数量
+		String msgContent = MsgContentUtils.getContent(messageTemp.getTempContent(), vars, messageSign.getSignContent());
+		int fee = MsgContentUtils.getFeeNum(msgContent);
+		if(!memberMsgInfoDao.reduceMsgNum(memberProject.getUserId(), fee)){
+//			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "6", "发送许可数量不足！", ip);
+			throw new ServiceException(6,"发送服务数量不足！");
+		}
+		MemberMsgInfo memberMsgInfo = memberMsgInfoDao.get(new SqlParamBean("user_id", memberProject.getUserId()));
+		//将发送请求加入到消息队列中
+		//写入日志
+		String sendId = MD5Security.md5_32_Small(System.nanoTime()+"");
+		
+		MsgSendLog msgSendLog = new MsgSendLog(memberProject.getUserId(), memberProject.getId(), sendId, apiName, msgContent, messageSign.getSignContent(), fee, to,sendType, MsgSendLog.ST_CREATE, new Date(), new Date());
+		if(!msgSendLogDao.add(msgSendLog)){
+			throw new ServiceException(9,"日志添加失败！");
+		}
+		MsgBean msgBean = new MsgBean(sendId,to, msgContent, messageSign.getSignNum(),tempId,vars,sendType);
+		if(!messageQueueService.pushReqMsg(msgBean)){
+//			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "8", "队列添加失败！", ip);
+			throw new ServiceException(10,"队列添加失败！");
+		}
+		apiResult.setFee(fee);
+		apiResult.setMsgNum(memberMsgInfo.getMsgNum());
+		apiResult.setSendId(sendId);
 		return apiResult;
 	}
 	/**

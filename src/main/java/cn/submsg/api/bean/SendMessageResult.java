@@ -4,6 +4,7 @@ public class SendMessageResult {
 	private String sendId;
 	private int fee;
 	private int msgNum;
+	private Double msgBalance;
 	public String getSendId() {
 		return sendId;
 	}
@@ -21,5 +22,11 @@ public class SendMessageResult {
 	}
 	public void setMsgNum(int msgNum) {
 		this.msgNum = msgNum;
+	}
+	public Double getMsgBalance() {
+		return msgBalance;
+	}
+	public void setMsgBalance(Double msgBalance) {
+		this.msgBalance = msgBalance;
 	}
 }

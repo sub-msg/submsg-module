@@ -9,6 +9,7 @@ import java.util.Date;
 public class MemberMsgInfo{
 	private Integer userId;
 	private Integer msgNum;
+	private Double msgBalance;
 	private Integer timeZone;
 	private Integer remindType;
 	private Integer remindNum;
@@ -48,6 +49,12 @@ public class MemberMsgInfo{
 	}
 	public Date getCreatedTime(){
 		return createdTime;
+	}
+	public Double getMsgBalance() {
+		return msgBalance;
+	}
+	public void setMsgBalance(Double msgBalance) {
+		this.msgBalance = msgBalance;
 	}
 }
 

@@ -13,6 +13,7 @@ public class MsgBean {
 	private String content;//内容
 	private String signNum;//签名的端口号
 	private int status;
+	private int sendType;//0 移动卓望    1 submail
 	private String msgId;
 	private String resCode;
 	private Date reqTime;
@@ -43,7 +44,7 @@ public class MsgBean {
 	public void setSendId(String sendId) {
 		this.sendId = sendId;
 	}
-	public MsgBean(String sendId, String to, String content, String signNum,String tempId,String vars) {
+	public MsgBean(String sendId, String to, String content, String signNum,String tempId,String vars,int sendType) {
 		super();
 		this.sendId = sendId;
 		this.to = to;
@@ -53,6 +54,7 @@ public class MsgBean {
 		this.reqTime = new Date();
 		this.tempId = tempId;
 		this.vars = vars;
+		this.sendType = sendType;
 	}
 	public MsgBean() {
 		super();
@@ -105,6 +107,13 @@ public class MsgBean {
 	}
 	public void setVars(String vars) {
 		this.vars = vars;
+	}
+	
+	public int getSendType() {
+		return sendType;
+	}
+	public void setSendType(int sendType) {
+		this.sendType = sendType;
 	}
 	@Override
 	public String toString() {

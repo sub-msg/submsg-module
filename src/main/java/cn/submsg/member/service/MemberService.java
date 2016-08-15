@@ -37,6 +37,7 @@ import cn.submsg.member.dao.MemberMessageTempDao;
 import cn.submsg.member.dao.MemberMsgInfoDao;
 import cn.submsg.member.dao.MemberProjectDao;
 import cn.submsg.member.dao.MemberVerifyDao;
+import cn.submsg.member.dao.MsgInternationalDataDao;
 import cn.submsg.message.utils.MsgContentUtils;
 
 public class MemberService {
@@ -64,6 +65,7 @@ public class MemberService {
     private MemberProjectDao memberProjectDao;
     @Autowired
     private MemberMessageSignDao memberMessageSignDao;
+
     /**
      * 获取所有产品列表
      * @return
