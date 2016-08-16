@@ -16,4 +16,10 @@ public class MemberMsgInfoDao extends SubMsgBaseDao<MemberMsgInfo> {
 		String sql = "update "+super.getTable()+" set msg_num=msg_num-? where user_id=? and msg_num-?>=0 limit 1";
 		return super.getJdbc().update(sql, SqlParameter.Instance().withInt(reduceNum).withInt(userId).withInt(reduceNum))>0;
 	}
+	
+	
+	public boolean reduceMsgBalance(int userId,double reduceNum){
+		String sql = "update "+super.getTable()+" set msg_balance=msg_balance-? where user_id=? and msg_balance-?>=0 limit 1";
+		return super.getJdbc().update(sql, SqlParameter.Instance().withDouble(reduceNum).withInt(userId).withDouble(reduceNum))>0;
+	}
 }

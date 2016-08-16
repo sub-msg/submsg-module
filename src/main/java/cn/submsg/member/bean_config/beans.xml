@@ -37,6 +37,8 @@
       
       <bean id="docDao" class="cn.submsg.member.dao.DocDao"></bean>
       
+      <bean id="msgInternationalDataDao" class="cn.submsg.member.dao.MsgInternationalDataDao"></bean>
+      
       <bean id="docReplyDao" class="cn.submsg.member.dao.DocReplyDao"></bean>
       <bean id="docService" class="cn.submsg.member.service.DocService"></bean>
       <bean id="memberService" class="cn.submsg.member.service.MemberService"></bean>

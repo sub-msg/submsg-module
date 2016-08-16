@@ -3,12 +3,15 @@ package cn.submsg.api.service;
 import java.util.Date;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Strings;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.sr178.common.jdbc.bean.SqlParamBean;
 import com.sr178.game.framework.exception.ServiceException;
 import com.sr178.module.utils.MD5Security;
@@ -20,6 +23,7 @@ import cn.submsg.member.bo.MemberMessageSign;
 import cn.submsg.member.bo.MemberMessageTemp;
 import cn.submsg.member.bo.MemberMsgInfo;
 import cn.submsg.member.bo.MemberProject;
+import cn.submsg.member.bo.MsgInternationalData;
 import cn.submsg.member.bo.MsgSendLog;
 import cn.submsg.member.dao.ApiReqErrorLogDao;
 import cn.submsg.member.dao.MemberMessageSignDao;
@@ -50,6 +54,7 @@ public class ApiService {
     @Autowired
     private MsgInternationalDataDao msgInternationalDataDao;
 	
+    private Cache<String,Long> timeMap = CacheBuilder.newBuilder().expireAfterAccess(60, TimeUnit.SECONDS).maximumSize(20000).build();
 	
 	public static final String TO = "to";
 	
@@ -64,6 +69,8 @@ public class ApiService {
 	public static final String SIGN_TYPE = "sign_type";
 	
 	public static final String SIGNATURE = "signature";
+	
+	public static final String REGION_CODE = "region_code";
 	
 	
 	public static final String TYPE_NORMAL = "normal";
@@ -85,7 +92,7 @@ public class ApiService {
 	public SendMessageResult sendMsg(String appId, String tempId,String to,String timestamp, String signature, String sign_type, String vars,String apiName,String ip,int sendType){
 		//默认卓望  该字段为测试字段
 		if(sendType==0){
-			sendType = MsgContentUtils.SENDTYPE_ZW;
+			sendType = MsgContentUtils.SENDTYPE_SUBMAIL;
 		}
 		SendMessageResult apiResult = new SendMessageResult();
 		if(Strings.isNullOrEmpty(timestamp)){
@@ -135,11 +142,10 @@ public class ApiService {
 			to = to.replace("+86", "");
 		}
 		//校验手机号码
-		if(to.indexOf("+")==-1){//国际短信  不校验并且发送模式
-			if(!isMobile(to)){
+		//国际短信  不校验并且发送模式
+		if(!isMobile(to)){
 //				addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "3", "手机号码不符合规则"+to, ip);
 				throw new ServiceException(3,"手机号码不符合规则"+to);
-			}
 		}
 		//查询出模板id
 		MemberMessageTemp  messageTemp = memberMessageTempDao.get(new SqlParamBean("temp_id", tempId));
@@ -160,6 +166,10 @@ public class ApiService {
 //			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "6", "发送许可数量不足！", ip);
 			throw new ServiceException(6,"发送服务数量不足！");
 		}
+		
+		//检查消息的发送间隔时间
+		checkSendDistance(to,msgContent);
+		
 		MemberMsgInfo memberMsgInfo = memberMsgInfoDao.get(new SqlParamBean("user_id", memberProject.getUserId()));
 		//将发送请求加入到消息队列中
 		//写入日志
@@ -197,7 +207,7 @@ public class ApiService {
 	public SendMessageResult sendMsgInternational(String appId, String regionCode,String tempId,String to,String timestamp, String signature, String sign_type, String vars,String apiName,String ip,int sendType){
 		//默认卓望  该字段为测试字段
 		if(sendType==0){
-			sendType = MsgContentUtils.SENDTYPE_ZW;
+			sendType = MsgContentUtils.SENDTYPE_SUBMAIL;
 		}
 		SendMessageResult apiResult = new SendMessageResult();
 		if(Strings.isNullOrEmpty(timestamp)){
@@ -217,6 +227,7 @@ public class ApiService {
 		}
 		//签名校验
 		Map<String,Object> data = new TreeMap<String,Object>();
+		data.put(REGION_CODE, regionCode);
 		data.put(TO, to);
 		data.put(PROJECT, tempId);
 		data.put(VARS, vars);
@@ -242,17 +253,16 @@ public class ApiService {
 				throw new ServiceException(7,"ip不在白名单内："+ip+",whiteIp=["+memberProject.getWhiteIp()+"]");
 			}
 		}
+		
 		//将+86字符替换掉
-		if(to.indexOf("+86")!=-1){
-			to = to.replace("+86", "");
+		if(regionCode.indexOf("+")!=-1){
+			regionCode = regionCode.replace("+","");
 		}
-		//校验手机号码
-		if(to.indexOf("+")==-1){//国际短信  不校验并且发送模式
-			if(!isMobile(to)){
-//				addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "3", "手机号码不符合规则"+to, ip);
-				throw new ServiceException(3,"手机号码不符合规则"+to);
-			}
+		// 屏蔽国内区号
+        if(regionCode.equals("86")){
+        	throw new ServiceException(3,"该接口不支持86区号！请使用国内短信接口");
 		}
+        
 		//查询出模板id
 		MemberMessageTemp  messageTemp = memberMessageTempDao.get(new SqlParamBean("temp_id", tempId));
 		if(messageTemp==null||messageTemp.getTempStatus().intValue()!=MsgContentUtils.STATUS_OK||messageTemp.getUserId().intValue()!=memberProject.getUserId().intValue()||messageTemp.getAppId().intValue()!=messageTemp.getAppId().intValue()){
@@ -265,19 +275,29 @@ public class ApiService {
 //			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "5", "无效的签名id"+messageTemp.getSignId(), ip);
 			throw new ServiceException(5,"无效的签名id"+messageTemp.getSignId());
 		}
-		//减发送许可数量
+		
+		MsgInternationalData mdata = msgInternationalDataDao.get(new SqlParamBean("region_code", regionCode));
+		if(mdata==null){
+			throw new ServiceException(11,"不支持的区域码:"+regionCode);
+		}
+		//减国际短信余额
 		String msgContent = MsgContentUtils.getContent(messageTemp.getTempContent(), vars, messageSign.getSignContent());
 		int fee = MsgContentUtils.getFeeNum(msgContent);
-		if(!memberMsgInfoDao.reduceMsgNum(memberProject.getUserId(), fee)){
+		if(!memberMsgInfoDao.reduceMsgBalance(memberProject.getUserId(), fee*mdata.getPrice())){
 //			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "6", "发送许可数量不足！", ip);
-			throw new ServiceException(6,"发送服务数量不足！");
+			throw new ServiceException(6,"余额不足！");
 		}
 		MemberMsgInfo memberMsgInfo = memberMsgInfoDao.get(new SqlParamBean("user_id", memberProject.getUserId()));
+		//拼接国际短信
+		to = "+"+regionCode+to;
+		
+		//检查消息的发送间隔时间
+		checkSendDistance(to,msgContent);
 		//将发送请求加入到消息队列中
 		//写入日志
 		String sendId = MD5Security.md5_32_Small(System.nanoTime()+"");
-		
 		MsgSendLog msgSendLog = new MsgSendLog(memberProject.getUserId(), memberProject.getId(), sendId, apiName, msgContent, messageSign.getSignContent(), fee, to,sendType, MsgSendLog.ST_CREATE, new Date(), new Date());
+		msgSendLog.setPrice(mdata.getPrice());
 		if(!msgSendLogDao.add(msgSendLog)){
 			throw new ServiceException(9,"日志添加失败！");
 		}
@@ -289,7 +309,22 @@ public class ApiService {
 		apiResult.setFee(fee);
 		apiResult.setMsgNum(memberMsgInfo.getMsgNum());
 		apiResult.setSendId(sendId);
+		apiResult.setMsgBalance(memberMsgInfo.getMsgBalance());
 		return apiResult;
+	}
+	
+	
+	public void checkSendDistance(String to,String content){
+		String md5Str = MD5Security.md5_32_Small(to+content);
+		long now = System.currentTimeMillis();
+		Long preTime = timeMap.getIfPresent(md5Str);
+		if(preTime==null){
+			timeMap.put(md5Str, now);
+		}else{
+			if(now-preTime<30*1000){
+				throw new ServiceException(1001,"相同手机号，相同内容间隔时间不能小于30秒");
+			}
+		}
 	}
 	/**
 	 * 校验签名

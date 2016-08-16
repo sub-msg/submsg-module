@@ -23,6 +23,8 @@ public class MsgSendLog{
 	private String msgSign;
 	//消费的短信条数
 	private Integer bill;
+	//短信的发送价格（国际短信才有的参数）
+	private Double price;
 	//发到的手机号
 	private String toMobile;
 	//0 移动卓望    1 submail
@@ -167,5 +169,12 @@ public class MsgSendLog{
 	public MsgSendLog() {
 		super();
 	}
+	public Double getPrice() {
+		return price;
+	}
+	public void setPrice(Double price) {
+		this.price = price;
+	}
+	
 }
 
