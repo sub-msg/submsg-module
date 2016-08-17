@@ -37,7 +37,6 @@ import cn.submsg.member.dao.MemberMessageTempDao;
 import cn.submsg.member.dao.MemberMsgInfoDao;
 import cn.submsg.member.dao.MemberProjectDao;
 import cn.submsg.member.dao.MemberVerifyDao;
-import cn.submsg.member.dao.MsgInternationalDataDao;
 import cn.submsg.message.utils.MsgContentUtils;
 
 public class MemberService {

@@ -14,6 +14,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.sr178.common.jdbc.bean.SqlParamBean;
 import com.sr178.game.framework.exception.ServiceException;
+import com.sr178.module.utils.DateUtils;
 import com.sr178.module.utils.MD5Security;
 
 import cn.submsg.api.bean.SendMessageResult;
@@ -55,6 +56,9 @@ public class ApiService {
     private MsgInternationalDataDao msgInternationalDataDao;
 	
     private Cache<String,Long> timeMap = CacheBuilder.newBuilder().expireAfterAccess(60, TimeUnit.SECONDS).maximumSize(20000).build();
+    
+    
+    private Cache<String,Integer> appDayMap = CacheBuilder.newBuilder().expireAfterAccess(25, TimeUnit.HOURS).maximumSize(20000).build();
 	
 	public static final String TO = "to";
 	
@@ -137,12 +141,12 @@ public class ApiService {
 				throw new ServiceException(7,"ip不在白名单内："+ip+",whiteIp=["+memberProject.getWhiteIp()+"]");
 			}
 		}
-		//将+86字符替换掉
-		if(to.indexOf("+86")!=-1){
-			to = to.replace("+86", "");
-		}
+		
+		//每日发送检查
+		String appDayKey = getDailyAppSendKey(memberProject.getId());
+		checkAppDaySendLimits(appDayKey, memberProject.getMaxSendNumDaily());
+		
 		//校验手机号码
-		//国际短信  不校验并且发送模式
 		if(!isMobile(to)){
 //				addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "3", "手机号码不符合规则"+to, ip);
 				throw new ServiceException(3,"手机号码不符合规则"+to);
@@ -184,9 +188,13 @@ public class ApiService {
 //			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "8", "队列添加失败！", ip);
 			throw new ServiceException(10,"队列添加失败！");
 		}
+		
+		this.increaseAppDailyTimes(appDayKey);
+		
 		apiResult.setFee(fee);
 		apiResult.setMsgNum(memberMsgInfo.getMsgNum());
 		apiResult.setSendId(sendId);
+		apiResult.setMsgBalance(memberMsgInfo.getMsgBalance());
 		return apiResult;
 	}
 
@@ -254,6 +262,10 @@ public class ApiService {
 			}
 		}
 		
+		//每日发送检查
+		String appDayKey = getDailyAppSendKey(memberProject.getId());
+		checkAppDaySendLimits(appDayKey, memberProject.getMaxSendNumDaily());
+		
 		//将+86字符替换掉
 		if(regionCode.indexOf("+")!=-1){
 			regionCode = regionCode.replace("+","");
@@ -306,6 +318,7 @@ public class ApiService {
 //			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "8", "队列添加失败！", ip);
 			throw new ServiceException(10,"队列添加失败！");
 		}
+		this.increaseAppDailyTimes(appDayKey);
 		apiResult.setFee(fee);
 		apiResult.setMsgNum(memberMsgInfo.getMsgNum());
 		apiResult.setSendId(sendId);
@@ -314,7 +327,7 @@ public class ApiService {
 	}
 	
 	
-	public void checkSendDistance(String to,String content){
+	private void checkSendDistance(String to,String content){
 		String md5Str = MD5Security.md5_32_Small(to+content);
 		long now = System.currentTimeMillis();
 		Long preTime = timeMap.getIfPresent(md5Str);
@@ -325,6 +338,30 @@ public class ApiService {
 				throw new ServiceException(1001,"相同手机号，相同内容间隔时间不能小于30秒");
 			}
 		}
+	}
+	
+	private String getDailyAppSendKey(int appId){
+		String dayStr = DateUtils.getDate(new Date());
+		return dayStr+"-"+appId;
+	}
+	
+	private void checkAppDaySendLimits(String appDayKey,int limit){
+		Integer times = appDayMap.getIfPresent(appDayKey);
+		if(times==null){
+			times = 0;
+		}
+		if(limit>0){//否则为不限制
+			if(times>=limit){
+				throw new ServiceException(1002,"超过当日限制条数！");
+			}
+		}
+	}
+	private void increaseAppDailyTimes(String appDayKey){
+		Integer times = appDayMap.getIfPresent(appDayKey);
+		if(times==null){
+			times = 0;
+		}
+		appDayMap.put(appDayKey, times+1);
 	}
 	/**
 	 * 校验签名
