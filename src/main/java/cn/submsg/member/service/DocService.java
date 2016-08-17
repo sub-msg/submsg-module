@@ -56,6 +56,14 @@ public class DocService {
 	public List<Doc> getListByTypeAndLevel(int type,int level){
 		return docDao.getList("order by order_num", new SqlParamBean("type", type),new SqlParamBean("and", "level", level));
 	}
+	/**
+	 * 搜索文档
+	 * @param str
+	 * @return
+	 */
+	public List<Doc> searchDoc(String str){
+		return docDao.searchDoc(str);
+	}
 	
 	
 	
