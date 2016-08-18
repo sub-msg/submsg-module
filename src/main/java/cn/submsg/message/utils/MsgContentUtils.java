@@ -64,6 +64,24 @@ public class MsgContentUtils {
 			return contentLength/MAX_ONE_MSG_LENGTH+1;
 		}
 	}
+	
+	public static int getOtherFeeNum(String msgContent) {
+		if (msgContent == null) {
+			return 1;
+		}
+		int contentLength = msgContent.length();
+		// 小于最大长度 直接返回1
+		if (contentLength <= 67) {
+			return 1;
+		}
+		// 如果大于 则看能否被整除 如果能 则直接相除得到商 否则求商后加1
+		if (contentLength % 67 == 0) {
+			return contentLength / MAX_ONE_MSG_LENGTH;
+		} else {
+			return contentLength / 67 + 1;
+		}
+
+	}
 	/**
 	 * 获取签名
 	 * @param signContent
@@ -74,9 +92,9 @@ public class MsgContentUtils {
 	}
 	
 	public static void main(String[] args) throws UnsupportedEncodingException {
-		String msgContent = "我2【";
+		String msgContent = "【积分游戏大平台】您卖出的一币对方已打款，请在48小时内登录用户中心确认,否则将扣除您一颗信誉星。5天后未进行操作将暂封您的一币卖出功能！";
 		System.out.println(msgContent.getBytes(CHARSET_UCS2).length);
 		
-		System.out.println(141%138);
+		System.out.println(msgContent.length());
 	}
 }

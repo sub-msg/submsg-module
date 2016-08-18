@@ -19,7 +19,7 @@ public class PayMentOrderDao extends SubMsgBaseDao<PaymentOrder> {
 	 * @return
 	 */
 	public IPage<PaymentOrder> getPayMentOrderPage(int userId,int pageSize,int pageIndex,String startTime,String endTime){
-		String sql = "select * from "+super.getTable()+" where user_id=? and created_time between ? and ?";
+		String sql = "select * from "+super.getTable()+" where user_id=? and created_time between ? and ? order by created_time desc";
 		return this.getJdbc().getListPage(sql, PaymentOrder.class, SqlParameter.Instance().withInt(userId).withString(startTime).withString(endTime), pageSize, pageIndex);
 	}
 }

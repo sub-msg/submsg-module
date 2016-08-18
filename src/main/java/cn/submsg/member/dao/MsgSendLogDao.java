@@ -56,7 +56,7 @@ public class MsgSendLogDao extends SubMsgBaseDao<MsgSendLog> {
 	 * @return
 	 */
 	public IPage<MsgSendLog> getMsgSendLogPage(int userId,int pageSize,int pageIndex,String startTime,String endTime){
-		String sql = "select * from "+super.getTable()+" where user_id=? and req_time between ? and ?";
+		String sql = "select * from "+super.getTable()+" where user_id=? and req_time between ? and ? order by req_time desc";
 		return this.getJdbc().getListPage(sql, MsgSendLog.class, SqlParameter.Instance().withInt(userId).withString(startTime).withString(endTime), pageSize, pageIndex);
 	}
 }

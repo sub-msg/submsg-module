@@ -166,6 +166,11 @@ public class ApiService {
 		//减发送许可数量
 		String msgContent = MsgContentUtils.getContent(messageTemp.getTempContent(), vars, messageSign.getSignContent());
 		int fee = MsgContentUtils.getFeeNum(msgContent);
+		int otherFee = MsgContentUtils.getOtherFeeNum(msgContent);
+		if(fee<otherFee){
+			fee = otherFee;
+		}
+		
 		if(!memberMsgInfoDao.reduceMsgNum(memberProject.getUserId(), fee)){
 //			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "6", "发送许可数量不足！", ip);
 			throw new ServiceException(6,"发送服务数量不足！");
@@ -295,6 +300,12 @@ public class ApiService {
 		//减国际短信余额
 		String msgContent = MsgContentUtils.getContent(messageTemp.getTempContent(), vars, messageSign.getSignContent());
 		int fee = MsgContentUtils.getFeeNum(msgContent);
+		
+		int otherFee = MsgContentUtils.getOtherFeeNum(msgContent);
+		if(fee<otherFee){
+			fee = otherFee;
+		}
+		
 		if(!memberMsgInfoDao.reduceMsgBalance(memberProject.getUserId(), fee*mdata.getPrice())){
 //			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "6", "发送许可数量不足！", ip);
 			throw new ServiceException(6,"余额不足！");
