@@ -102,6 +102,9 @@ public class ApiService {
 		if(Strings.isNullOrEmpty(timestamp)){
 			throw new ServiceException(8,"时间戳不能为空！");
 		}
+		if(Strings.isNullOrEmpty(to)){
+			throw new ServiceException(11,"手机号码不能为空！");
+		}
 		if(Strings.isNullOrEmpty(sign_type)){
 			sign_type = TYPE_NORMAL;
 		}
@@ -147,6 +150,7 @@ public class ApiService {
 		checkAppDaySendLimits(appDayKey, memberProject.getMaxSendNumDaily());
 		
 		//校验手机号码
+		to = to.trim();
 		if(!isMobile(to)){
 //				addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "3", "手机号码不符合规则"+to, ip);
 				throw new ServiceException(3,"手机号码不符合规则"+to);
