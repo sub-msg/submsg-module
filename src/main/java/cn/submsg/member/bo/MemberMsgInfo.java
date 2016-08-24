@@ -56,5 +56,19 @@ public class MemberMsgInfo{
 	public void setMsgBalance(Double msgBalance) {
 		this.msgBalance = msgBalance;
 	}
+	public MemberMsgInfo(Integer userId, Integer msgNum, Double msgBalance, Integer timeZone, Integer remindType,
+			Integer remindNum, Date createdTime) {
+		super();
+		this.userId = userId;
+		this.msgNum = msgNum;
+		this.msgBalance = msgBalance;
+		this.timeZone = timeZone;
+		this.remindType = remindType;
+		this.remindNum = remindNum;
+		this.createdTime = createdTime;
+	}
+	public MemberMsgInfo() {
+		super();
+	}
 }
 

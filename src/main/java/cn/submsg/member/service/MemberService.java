@@ -115,7 +115,11 @@ public class MemberService {
 		 member.setCreatedTime(now);
 		 member.setUpdatedTime(now);
 		 member.setStatus(Member.NOT_ACTIVED);
-		 memberDao.addBackKey(member);
+		 int userId = memberDao.addBackKey(member);
+		 
+		 
+		 MemberMsgInfo memberMsgInfo = new MemberMsgInfo(userId, 0, 0d, 0, 0, -1, new Date());
+		 memberMsgInfoDao.add(memberMsgInfo);
 		 
 		 //发送激活邮件
 		 sendVerifyEmail(email, VerifyType.MemberActive);
