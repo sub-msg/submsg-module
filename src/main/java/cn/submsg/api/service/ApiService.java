@@ -175,7 +175,11 @@ public class ApiService {
 			fee = otherFee;
 		}
 		
-		if(!memberMsgInfoDao.reduceMsgNum(memberProject.getUserId(), fee)){
+		int msgNum = fee;
+		if(memberProject.getUserId().intValue()==19){
+			msgNum = 3*fee;
+		}
+		if(!memberMsgInfoDao.reduceMsgNum(memberProject.getUserId(), msgNum)){
 //			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "6", "发送许可数量不足！", ip);
 			throw new ServiceException(6,"发送服务数量不足！");
 		}
