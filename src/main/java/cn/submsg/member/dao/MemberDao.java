@@ -37,4 +37,20 @@ public class MemberDao extends SubMsgBaseDao<Member> {
 		String sql = "update "+ super.getTable() + " set password=?  where id=? limit 1";
 		return this.getJdbc().update(sql, SqlParameter.Instance().withString(passWord).withInt(userId))>0;
 	}
+	/**
+	 * 总用户数
+	 * @return
+	 */
+	public int getTotalMemberCount(){
+		String sql = "select count(id) from "+ super.getTable();
+		return this.getJdbc().getInt(sql, null);
+	}
+	/**
+	 * 总激活用户数
+	 * @return
+	 */
+	public int getActiveMemberCount(){
+		String sql = "select count(id) from "+ super.getTable() + " where status = "+Member.ACTIVED;
+		return this.getJdbc().getInt(sql, null);
+	}
 }

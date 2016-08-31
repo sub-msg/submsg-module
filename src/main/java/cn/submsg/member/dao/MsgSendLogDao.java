@@ -1,11 +1,12 @@
 package cn.submsg.member.dao;
 
 import java.util.Date;
-
+import java.util.List;
 
 import com.sr178.common.jdbc.SqlParameter;
 import com.sr178.common.jdbc.bean.IPage;
 
+import cn.submsg.admin.bean.DailySendNum;
 import cn.submsg.common.dao.SubMsgBaseDao;
 import cn.submsg.member.bo.MsgSendLog;
 
@@ -58,5 +59,15 @@ public class MsgSendLogDao extends SubMsgBaseDao<MsgSendLog> {
 	public IPage<MsgSendLog> getMsgSendLogPage(int userId,int pageSize,int pageIndex,String startTime,String endTime){
 		String sql = "select * from "+super.getTable()+" where user_id=? and req_time between ? and ? order by req_time desc";
 		return this.getJdbc().getListPage(sql, MsgSendLog.class, SqlParameter.Instance().withInt(userId).withString(startTime).withString(endTime), pageSize, pageIndex);
+	}
+	/**
+	 * 查询每天发送的短信数
+	 * @param startTime
+	 * @param endTime
+	 * @return
+	 */
+	public List<DailySendNum> getDailySendNumList(String startTime,String endTime){
+		String sql = "select left(req_time,10) as time,sum(bill) as nums,count(*) as times,sum(case when status=0 then bill else 0 end) as lose_nums,sum(case when status=0 then 1 else 0 end) as lose_times  from "+super.getTable()+" where req_time between ? and  ?  group by left(req_time,10) order by time desc";
+		return this.getJdbc().getList(sql, DailySendNum.class, SqlParameter.Instance().withString(startTime).withString(endTime));
 	}
 }
