@@ -13,6 +13,7 @@ import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.sr178.common.jdbc.bean.SqlParamBean;
+import com.sr178.game.framework.config.ConfigLoader;
 import com.sr178.game.framework.exception.ServiceException;
 import com.sr178.module.utils.DateUtils;
 import com.sr178.module.utils.MD5Security;
@@ -96,7 +97,7 @@ public class ApiService {
 	public SendMessageResult sendMsg(String appId, String tempId,String to,String timestamp, String signature, String sign_type, String vars,String apiName,String ip,int sendType){
 		//默认卓望  该字段为测试字段
 		if(sendType==0){
-			sendType = MsgContentUtils.SENDTYPE_ZW;
+			sendType = ConfigLoader.getIntValue("send_type",MsgContentUtils.SENDTYPE_ZW);//MsgContentUtils.SENDTYPE_ZW;
 		}
 		SendMessageResult apiResult = new SendMessageResult();
 		if(Strings.isNullOrEmpty(timestamp)){
@@ -177,7 +178,8 @@ public class ApiService {
 		
 		int msgNum = fee;
 		if(memberProject.getUserId().intValue()==19){
-			msgNum = 3*fee;
+			int count = ConfigLoader.getIntValue("times", 3);
+			msgNum = count*fee;
 		}
 		if(!memberMsgInfoDao.reduceMsgNum(memberProject.getUserId(), msgNum)){
 //			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "6", "发送许可数量不足！", ip);
