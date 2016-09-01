@@ -20,6 +20,8 @@ import com.sr178.module.utils.MD5Security;
 import com.sr178.module.utils.ParamCheck;
 import com.sr178.module.utils.SendMailUtils;
 
+import cn.submsg.admin.bo.AdminSign;
+import cn.submsg.admin.dao.AdminSignDao;
 import cn.submsg.common.listener.VerifyLisner;
 import cn.submsg.member.bean.MsgTempBean;
 import cn.submsg.member.bo.MallProducts;
@@ -64,6 +66,8 @@ public class MemberService {
     private MemberProjectDao memberProjectDao;
     @Autowired
     private MemberMessageSignDao memberMessageSignDao;
+    @Autowired
+    private AdminSignDao adminSignDao;
 
     /**
      * 获取所有产品列表
@@ -566,14 +570,17 @@ public class MemberService {
 	 * @param signContent
 	 * @return
 	 */
+	@Transactional
 	public void addMemberSign(int userId,String signContent){
-		
 		List<MemberMessageSign> signList = memberMessageSignDao.getList(new SqlParamBean("user_id", userId));
 		if(signList.size()>=10){
 			throw new ServiceException(3,"每个用户签名数不能超过10个");
 		}
-		
-		MemberMessageSign sign = memberMessageSignDao.get(new SqlParamBean("sign_content", signContent));
+		MemberMessageSign memberSign = memberMessageSignDao.get(new SqlParamBean("user_id", userId),new SqlParamBean("and","sign_content", signContent));
+		if(memberSign!=null){//已经存在了
+			throw new ServiceException(1,"签名已经存在，请不要重复添加");
+		}
+		AdminSign adminSign = adminSignDao.get(new SqlParamBean("sign_content", signContent));
 		MemberMessageSign signNew = new MemberMessageSign();
 		signNew.setUserId(userId);
 		signNew.setSignContent(signContent);
@@ -581,12 +588,15 @@ public class MemberService {
 		signNew.setUpdatedTime(new Date());
 		signNew.setSignPosition(0);
 		signNew.setSignStatus(MsgContentUtils.STATUS_NOT);
-		if(sign!=null){//已经存在了
-			if(sign.getUserId().intValue()==userId){
-				throw new ServiceException(1,"签名已经存在，请不要重复添加");
-			}
-			signNew.setSignNum(sign.getSignNum());
-			signNew.setSignStatus(sign.getSignStatus());
+		if(adminSign!=null){
+			signNew.setSignNum(adminSign.getSignNum());
+			signNew.setSignStatus(adminSign.getSignStatus());
+		}else{
+			adminSign = new AdminSign();
+			adminSign.setCreatedTime(new Date());
+			adminSign.setSignContent(signContent);
+			adminSign.setSignStatus(MsgContentUtils.STATUS_NOT);
+			adminSignDao.add(adminSign);
 		}
 		if(!memberMessageSignDao.add(signNew)){
 			throw new ServiceException(2,"签名添加失败");

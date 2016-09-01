@@ -4,15 +4,23 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.base.Strings;
+import com.sr178.common.jdbc.bean.IPage;
+import com.sr178.common.jdbc.bean.SqlParamBean;
+import com.sr178.game.framework.exception.ServiceException;
 import com.sr178.module.utils.DateUtils;
 
 import cn.submsg.admin.bean.DailySendNum;
 import cn.submsg.admin.bean.PayMentBean;
+import cn.submsg.admin.bo.AdminSign;
+import cn.submsg.admin.dao.AdminSignDao;
 import cn.submsg.member.dao.MemberDao;
+import cn.submsg.member.dao.MemberMessageSignDao;
 import cn.submsg.member.dao.MsgSendLogDao;
 import cn.submsg.member.dao.PayMentOrderDao;
+import cn.submsg.message.utils.MsgContentUtils;
 
 public class AdminService {
     @Autowired
@@ -21,6 +29,10 @@ public class AdminService {
     private PayMentOrderDao payMentOrderDao;
     @Autowired
     private MemberDao memberDao;
+    @Autowired
+    private AdminSignDao adminSignDao;
+    @Autowired
+    private MemberMessageSignDao memberMessageSignDao;
     
     
     /**
@@ -49,6 +61,33 @@ public class AdminService {
      */
     public List<PayMentBean> getFinishPayMentOrderList(int num){
     	return payMentOrderDao.getPayMentBean(num);
+    }
+    /**
+     * 获取签名列表
+     * @param pageSize
+     * @param pageIndex
+     * @return
+     */
+    public IPage<AdminSign> getAdminSignPage(String searchStr,int pageSize,int pageIndex){
+    	return adminSignDao.getAdminSignList(searchStr,pageSize, pageIndex);
+    }
+    /**
+     * 更新签名状态
+     * @param id
+     * @param signNum
+     */
+    @Transactional
+    public void updateAdminSign(int id,String signNum){
+    	AdminSign adminSign = adminSignDao.get(new SqlParamBean("id", id));
+    	if(adminSign==null){
+    		throw new ServiceException(1,"签名id不存在。id="+id);
+    	}
+    	int signStatus = MsgContentUtils.STATUS_OK;
+    	if(Strings.isNullOrEmpty(signNum)){
+    		signStatus = MsgContentUtils.STATUS_NOT;
+    	}
+    	adminSignDao.updateSign(id, signNum, signStatus);
+    	memberMessageSignDao.updateSignStatus(adminSign.getSignContent(), signNum, signStatus);
     }
     
     /**
