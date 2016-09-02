@@ -52,7 +52,7 @@ public class PayMentOrderDao extends SubMsgBaseDao<PaymentOrder> {
 	 * @return
 	 */
 	public int getTotalPayUserCount(){
-		String sql = "select count(distinct user_id) from "+super.getTable();
+		String sql = "select count(distinct user_id) from "+super.getTable()+" where status=1";
 		return this.getJdbc().getInt(sql, null);
 	}
 	/**
