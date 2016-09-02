@@ -13,7 +13,7 @@ public class MemberMessageTemp{
 	private String tempId;
 	private String tempTitle;
 	private String tempContent;
-	private Integer tempStatus;
+	private Integer tempStatus;// 0 没有提交审核  -1正在审核   -2 审核不通过   1 审核通过
 	private Integer signId;
 	private Date updatedTime;
 	private Date createdTime;

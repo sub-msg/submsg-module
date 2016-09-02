@@ -2,8 +2,9 @@ package cn.submsg.member.bean;
 
 import java.util.Date;
 
-public class MsgTempBean {
-
+public class AdminMsgTempBean {
+    private int userId;
+    private String userName;
 	private String tempId;
 	private String tempTitle;
 	private String tempContent;
@@ -76,6 +77,18 @@ public class MsgTempBean {
 	}
 	public void setCreatedTime(Date createdTime) {
 		this.createdTime = createdTime;
+	}
+	public int getUserId() {
+		return userId;
+	}
+	public void setUserId(int userId) {
+		this.userId = userId;
+	}
+	public String getUserName() {
+		return userName;
+	}
+	public void setUserName(String userName) {
+		this.userName = userName;
 	}
 	public String getUnpassReason() {
 		return unpassReason;

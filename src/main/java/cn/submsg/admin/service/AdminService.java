@@ -16,8 +16,11 @@ import cn.submsg.admin.bean.DailySendNum;
 import cn.submsg.admin.bean.PayMentBean;
 import cn.submsg.admin.bo.AdminSign;
 import cn.submsg.admin.dao.AdminSignDao;
+import cn.submsg.member.bean.AdminMsgTempBean;
+import cn.submsg.member.bean.MsgTempBean;
 import cn.submsg.member.dao.MemberDao;
 import cn.submsg.member.dao.MemberMessageSignDao;
+import cn.submsg.member.dao.MemberMessageTempDao;
 import cn.submsg.member.dao.MsgSendLogDao;
 import cn.submsg.member.dao.PayMentOrderDao;
 import cn.submsg.message.utils.MsgContentUtils;
@@ -33,7 +36,42 @@ public class AdminService {
     private AdminSignDao adminSignDao;
     @Autowired
     private MemberMessageSignDao memberMessageSignDao;
+    @Autowired
+    private MemberMessageTempDao memberMessageTempDao;
     
+    /**
+     * 获取模板列表
+     * @param searchContent
+     * @param tempStatus
+     * @param pageSize
+     * @param pageIndex
+     * @return
+     */
+    public IPage<AdminMsgTempBean> getTempPage(String searchContent,int tempStatus,int pageSize,int pageIndex){
+    	return memberMessageTempDao.getAdminMsgTempBean(searchContent, pageSize, pageIndex, tempStatus);
+    }
+    
+    /**
+     * 审核模板
+     * @param tempId
+     * @param tempStatus
+     * @param newTempId
+     * @param unpassReason
+     */
+    public void updateTemp(String tempId,int tempStatus,String newTempId,String unpassReason){
+    	
+    	MsgTempBean msgTempBean = memberMessageTempDao.getAdminMsgTempBean(tempId);
+    	if(msgTempBean==null){
+    		throw new ServiceException(1,"不存在的模板");
+    	}
+    	if(msgTempBean.getSignStatus()==null){
+    		throw new ServiceException(2,"请先审核签名，才能审核模板");
+    	}
+    	if(msgTempBean.getSignStatus()==MsgContentUtils.STATUS_NOT&&tempStatus==1){
+    		throw new ServiceException(2,"请先审核签名，才能审核模板");
+    	}
+    	memberMessageTempDao.updateTempStatus(tempId, tempStatus, newTempId, unpassReason);
+    }
     
     /**
      * 查询每日发送量
