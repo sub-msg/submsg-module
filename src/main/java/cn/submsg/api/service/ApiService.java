@@ -115,8 +115,8 @@ public class ApiService {
 			throw new ServiceException(1000,"无效的appid="+appId);
 		}
 		//是否过期
-		if(System.currentTimeMillis()-Long.valueOf(timestamp)>6000){
-			throw new ServiceException(1,"该消息已过期，时间超过6s");
+		if(System.currentTimeMillis()-Long.valueOf(timestamp)>30000){
+			throw new ServiceException(1,"该消息已过期，时间超过30s");
 		}
 		//签名校验
 		Map<String,Object> data = new TreeMap<String,Object>();
@@ -245,8 +245,8 @@ public class ApiService {
 			throw new ServiceException(1000,"无效的appid="+appId);
 		}
 		//是否过期
-		if(System.currentTimeMillis()-Long.valueOf(timestamp)>6000){
-			throw new ServiceException(1,"该消息已过期，时间超过6s");
+		if(System.currentTimeMillis()-Long.valueOf(timestamp)>30000){
+			throw new ServiceException(1,"该消息已过期，时间超过30s");
 		}
 		//签名校验
 		Map<String,Object> data = new TreeMap<String,Object>();
