@@ -14,6 +14,7 @@ public class MsgContentUtils {
 	public static final int SENDTYPE_ZW = 1;//发送类型  卓望
 	public static final int SENDTYPE_SUBMAIL = 2;//发送类型  submail
 	public static final int SENDTYPE_YP = 3;//云片主机
+	public static final int SENDTYPE_MD = 4;//秒滴
 	
     public static final int STATUS_OK=1;
     public static final int STATUS_NOT=0;
