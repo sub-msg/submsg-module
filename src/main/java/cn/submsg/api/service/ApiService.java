@@ -176,6 +176,10 @@ public class ApiService {
 			fee = otherFee;
 		}
 		
+		
+		//检查消息的发送间隔时间
+		checkSendDistance(to,msgContent);
+		
 		int msgNum = fee;
 		if(memberProject.getUserId().intValue()==19){
 			int count = ConfigLoader.getIntValue("times", 3);
@@ -186,8 +190,7 @@ public class ApiService {
 			throw new ServiceException(6,"发送服务数量不足！");
 		}
 		
-		//检查消息的发送间隔时间
-		checkSendDistance(to,msgContent);
+
 		
 		MemberMsgInfo memberMsgInfo = memberMsgInfoDao.get(new SqlParamBean("user_id", memberProject.getUserId()));
 		//将发送请求加入到消息队列中
@@ -307,8 +310,14 @@ public class ApiService {
 		if(mdata==null){
 			throw new ServiceException(11,"不支持的区域码:"+regionCode);
 		}
+		
 		//减国际短信余额
 		String msgContent = MsgContentUtils.getContent(messageTemp.getTempContent(), vars, messageSign.getSignContent());
+		
+		//检查消息的发送间隔时间
+		checkSendDistance(to,msgContent);
+		
+
 		int fee = MsgContentUtils.getFeeNum(msgContent);
 		
 		int otherFee = MsgContentUtils.getOtherFeeNum(msgContent);
@@ -324,8 +333,7 @@ public class ApiService {
 		//拼接国际短信
 		to = "+"+regionCode+to;
 		
-		//检查消息的发送间隔时间
-		checkSendDistance(to,msgContent);
+
 		//将发送请求加入到消息队列中
 		//写入日志
 		String sendId = MD5Security.md5_32_Small(System.nanoTime()+"");
@@ -358,6 +366,7 @@ public class ApiService {
 			if(now-preTime<30*1000){
 				throw new ServiceException(1001,"相同手机号，相同内容间隔时间不能小于30秒");
 			}
+			timeMap.put(md5Str, now);
 		}
 	}
 	
