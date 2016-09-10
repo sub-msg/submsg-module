@@ -58,7 +58,7 @@ public class AdminService {
      * @param newTempId
      * @param unpassReason
      */
-    public void updateTemp(String tempId,int tempStatus,String newTempId,String unpassReason){
+    public void updateTemp(String tempId,int tempStatus,String newTempId,String unpassReason,int sendType){
     	
     	MsgTempBean msgTempBean = memberMessageTempDao.getAdminMsgTempBean(tempId);
     	if(msgTempBean==null){
@@ -70,7 +70,7 @@ public class AdminService {
     	if(msgTempBean.getSignStatus()==MsgContentUtils.STATUS_NOT&&tempStatus==1){
     		throw new ServiceException(2,"请先审核签名，才能审核模板");
     	}
-    	memberMessageTempDao.updateTempStatus(tempId, tempStatus, newTempId, unpassReason);
+    	memberMessageTempDao.updateTempStatus(tempId, tempStatus, newTempId, unpassReason,sendType);
     }
     
     /**
@@ -115,7 +115,7 @@ public class AdminService {
      * @param signNum
      */
     @Transactional
-    public void updateAdminSign(int id,String signNum){
+    public void updateAdminSign(int id,String signNum,int sendType){
     	AdminSign adminSign = adminSignDao.get(new SqlParamBean("id", id));
     	if(adminSign==null){
     		throw new ServiceException(1,"签名id不存在。id="+id);
@@ -124,8 +124,8 @@ public class AdminService {
     	if(Strings.isNullOrEmpty(signNum)){
     		signStatus = MsgContentUtils.STATUS_NOT;
     	}
-    	adminSignDao.updateSign(id, signNum, signStatus);
-    	memberMessageSignDao.updateSignStatus(adminSign.getSignContent(), signNum, signStatus);
+    	adminSignDao.updateSign(id, signNum, signStatus,sendType);
+    	memberMessageSignDao.updateSignStatus(adminSign.getSignContent(), signNum, signStatus,sendType);
     }
     
     /**

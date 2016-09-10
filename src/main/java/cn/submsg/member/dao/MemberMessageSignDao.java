@@ -16,8 +16,8 @@ public class MemberMessageSignDao extends SubMsgBaseDao<MemberMessageSign> {
       * @param signStatus
       * @return
       */
-	 public boolean updateSignStatus(String signContent,String signNum,int signStatus){
-		 String sql = "update "+super.getTable()+" set sign_status = ? ,sign_num = ?,updated_time = ? where sign_content = ?";
-		 return this.getJdbc().update(sql, SqlParameter.Instance().withInt(signStatus).withString(signNum).withObject(new Date()).withString(signContent))>0;
+	 public boolean updateSignStatus(String signContent,String signNum,int signStatus,int sendType){
+		 String sql = "update "+super.getTable()+" set sign_status = ? ,sign_num = ?,updated_time = ?,send_type=? where sign_content = ?";
+		 return this.getJdbc().update(sql, SqlParameter.Instance().withInt(signStatus).withString(signNum).withObject(new Date()).withInt(sendType).withString(signContent))>0;
 	 }
 }

@@ -8,6 +8,7 @@ public class AdminSign {
 	private String signContent;
 	private String signNum;
 	private int signStatus;//
+	private int sendType;
 	private Date createdTime;
 	public Integer getId() {
 		return id;
@@ -38,5 +39,11 @@ public class AdminSign {
 	}
 	public void setSignStatus(int signStatus) {
 		this.signStatus = signStatus;
+	}
+	public int getSendType() {
+		return sendType;
+	}
+	public void setSendType(int sendType) {
+		this.sendType = sendType;
 	}
 }

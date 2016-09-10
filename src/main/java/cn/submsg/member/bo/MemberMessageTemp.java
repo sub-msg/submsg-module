@@ -15,6 +15,7 @@ public class MemberMessageTemp{
 	private String tempContent;
 	private Integer tempStatus;// 0 没有提交审核  -1正在审核   -2 审核不通过   1 审核通过
 	private Integer signId;
+	private int sendType;
 	private Date updatedTime;
 	private Date createdTime;
 	public void setId(Integer id){
@@ -76,6 +77,12 @@ public class MemberMessageTemp{
 	}
 	public void setAppId(Integer appId) {
 		this.appId = appId;
+	}
+	public int getSendType() {
+		return sendType;
+	}
+	public void setSendType(int sendType) {
+		this.sendType = sendType;
 	}
 }
 

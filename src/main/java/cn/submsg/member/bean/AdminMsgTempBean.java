@@ -9,6 +9,7 @@ public class AdminMsgTempBean {
 	private String tempTitle;
 	private String tempContent;
 	private int tempStatus;
+	private int sendType;
 	private String unpassReason;
 	
 	private Integer signId;
@@ -95,5 +96,11 @@ public class AdminMsgTempBean {
 	}
 	public void setUnpassReason(String unpassReason) {
 		this.unpassReason = unpassReason;
+	}
+	public int getSendType() {
+		return sendType;
+	}
+	public void setSendType(int sendType) {
+		this.sendType = sendType;
 	}
 }

@@ -162,11 +162,20 @@ public class ApiService {
 //			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "4", "无效的模板id"+tempId, ip);
 			throw new ServiceException(4,"无效的模板id"+tempId);
 		}
+		
 		//消息签名
 		MemberMessageSign messageSign = memberMessageSignDao.get(new SqlParamBean("id", messageTemp.getSignId()));
 		if(messageSign==null||messageSign.getSignStatus().intValue()!=MsgContentUtils.STATUS_OK||messageSign.getUserId().intValue()!=memberProject.getUserId().intValue()){
 //			addApiErrorLog(memberProject.getUserId(),Integer.valueOf(appId), apiName, "5", "无效的签名id"+messageTemp.getSignId(), ip);
 			throw new ServiceException(5,"无效的签名id"+messageTemp.getSignId());
+		}
+		//sendType设置
+		if(messageSign.getSendType()!=0){
+			sendType = messageSign.getSendType();
+		}
+		//模板里设置的sendType是优先级最高的
+		if(messageTemp.getSendType()!=0){
+			sendType = messageTemp.getSendType();
 		}
 		//减发送许可数量
 		String msgContent = MsgContentUtils.getContent(messageTemp.getTempContent(), vars, messageSign.getSignContent());

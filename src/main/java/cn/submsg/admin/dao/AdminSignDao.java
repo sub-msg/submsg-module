@@ -30,9 +30,9 @@ public class AdminSignDao extends SubMsgBaseDao<AdminSign> {
 	 * @param signStatus
 	 * @return
 	 */
-	public boolean updateSign(int id,String signNum,int signStatus){
-		String sql = "update "+super.getTable()+" set sign_status = ? ,sign_num = ? where id=?";
-		return this.getJdbc().update(sql, SqlParameter.Instance().withInt(signStatus).withString(signNum).withInt(id))>0;
+	public boolean updateSign(int id,String signNum,int signStatus,int sendType){
+		String sql = "update "+super.getTable()+" set sign_status = ? ,sign_num = ?,send_type=? where id=?";
+		return this.getJdbc().update(sql, SqlParameter.Instance().withInt(signStatus).withString(signNum).withInt(sendType).withInt(id))>0;
 	}
 	
 	

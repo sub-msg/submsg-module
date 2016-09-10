@@ -17,7 +17,7 @@ public class MemberMessageTempDao extends SubMsgBaseDao<MemberMessageTemp> {
 	private static final String TEMP_BEAN_CLUMS = "temp.temp_id,temp.temp_title,temp.temp_content,temp.temp_status,temp.unpass_reason,temp.updated_time,temp.created_time,sign.id as sign_id,sign.sign_content,sign.sign_status,sign.sign_num";
 	
 	
-	private static final String ADMIN_BEAN_CLUMS = "temp.user_id,mem.user_name,temp.temp_id,temp.temp_title,temp.temp_content,temp.temp_status,temp.unpass_reason,temp.updated_time,temp.created_time,sign.id as sign_id,sign.sign_content,sign.sign_status,sign.sign_num";
+	private static final String ADMIN_BEAN_CLUMS = "temp.user_id,mem.user_name,temp.temp_id,temp.temp_title,temp.temp_content,temp.temp_status,temp.unpass_reason,temp.updated_time,temp.created_time,temp.send_type,sign.id as sign_id,sign.sign_content,sign.sign_status,sign.sign_num";
 
 	
 	/**
@@ -153,10 +153,10 @@ public class MemberMessageTempDao extends SubMsgBaseDao<MemberMessageTemp> {
 	 * @param signId
 	 * @return
 	 */
-	public boolean updateTempStatus(String tempId,int tempStatus,String newTempId,String unpassReason){
-		String sql = "update "+super.getTable()+" set temp_status=?,unpass_reason=? ";
+	public boolean updateTempStatus(String tempId,int tempStatus,String newTempId,String unpassReason,int sendType){
+		String sql = "update "+super.getTable()+" set temp_status=?,unpass_reason=?,send_type=? ";
 		SqlParameter parameter = SqlParameter.Instance();
-		parameter.withInt(tempStatus).withString(unpassReason);
+		parameter.withInt(tempStatus).withString(unpassReason).withInt(sendType);
 		if(!Strings.isNullOrEmpty(newTempId)){
 			sql = sql +",temp_id=?";
 			parameter.withString(newTempId);
