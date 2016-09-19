@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.sr178.common.jdbc.bean.SqlParamBean;
 import com.sr178.game.framework.exception.ServiceException;
 import com.sr178.game.framework.log.LogSystem;
+import com.sr178.module.utils.MD5Security;
 import com.sr178.module.utils.ParamCheck;
 
 import cn.submsg.member.bo.MallProducts;
@@ -27,6 +28,7 @@ import cn.submsg.member.dao.PayMentOrderDao;
 import cn.submsg.pay.alipay.directpay.config.AlipayConfig;
 import cn.submsg.pay.alipay.directpay.utils.AlipayNotify;
 import cn.submsg.pay.alipay.directpay.utils.AlipaySubmit;
+import cn.submsg.pay.jdpay.bank.JdPayBankConfig;
 
 public class PayMentService {
 	@Autowired
@@ -296,6 +298,106 @@ public class PayMentService {
 			}
 		} catch (Exception e) {
 			LogSystem.error(e, "异常回调！～～");
+			return false;
+		}
+	}
+	/**
+	 * 京东银行卡支付
+	 * @param orderId
+	 * @param bankId
+	 * @return
+	 */
+	public String jdBankPayReq(String orderId, String bankId) {
+		PaymentOrder order = payMentOrderDao.get(new SqlParamBean("order_id", orderId));
+		if (order == null) {
+			throw new ServiceException(8888, "订单号找不到" + orderId);
+		}
+		String v_mid, key, v_url, v_oid, v_amount, v_moneytype, v_md5info; // 定义必须传递的参数变量
+		v_mid = JdPayBankConfig.V_MID; // 1001是网银在线的测试商户号，商户要替换为自己的商户号。
+		v_url = JdPayBankConfig.RECEIVE_URL; // 商户自定义返回接收支付结果的页面。对应Receive.jsp示例
+		key = JdPayBankConfig.MD5_KEY; // 参照"网银在线支付B2C系统商户接口文档v4.1.doc"中2.4.1进行设置。
+		String remark2 = JdPayBankConfig.NOTIFY_URL; // 服务器异步通知的接收地址。对应AutoReceive.jsp示例。必须要有[url:=]格式
+														// 参照"网银在线支付B2C系统商户接口文档v4.1.doc"中2.3.3.2
+		// **********************************************
+		// 以上三项必须修改
+		v_oid = orderId;
+		v_amount = order.getProductAmount() + "";
+		; // 订单金额
+		v_moneytype = "CNY"; // 币种
+		v_md5info = ""; // 对拼凑串MD5私钥加密后的值
+
+		String text = v_amount + v_moneytype + v_oid + v_mid + v_url + key; // 拼凑加密串
+		try {
+			v_md5info = MD5Security.md5_32_Big(text); // 网银支付平台对MD5值只认大写字符串，所以小写的MD5值得转换为大写
+		} catch (Exception e) {
+			LogSystem.error(e, "");
+		}
+		String pmode_id = bankId; // 代表选择的银行
+		
+		StringBuffer result = new StringBuffer();
+		result.append("<html>");
+		result.append("<body onLoad=\"javascript:document.E_FORM.submit()\">");
+		result.append("<form action=\"https://tmapi.jdpay.com/PayGate?encoding=UTF-8\" method=\"POST\" name=\"E_FORM\">");
+		result.append("");
+		result.append("<input type=\"hidden\" name=\"v_md5info\"    value=\""+v_md5info+"\" size=\"100\">");
+		result.append("<input type=\"hidden\" name=\"v_mid\"        value=\""+v_mid+"\">");
+		result.append("<input type=\"hidden\" name=\"v_oid\"        value=\""+v_oid+"\">");
+		result.append("<input type=\"hidden\" name=\"v_amount\"     value=\""+v_amount+"\">");
+		result.append("<input type=\"hidden\" name=\"v_moneytype\"  value=\""+v_moneytype+"\">");
+		result.append("<input type=\"hidden\" name=\"v_url\"        value=\""+v_url+"\"> ");
+		//<!--以下几项项为网上支付完成后，随支付反馈信息一同传给信息接收页 -->
+		result.append("<input type=\"hidden\"  name=\"remark1\" value=\"\">");
+		result.append("<input type=\"hidden\"  name=\"remark2\" value=\""+remark2+"\">");
+		result.append("<input type=\"hidden\"  name=\"pmode_id\" value=\""+pmode_id+"\">");
+		result.append("</form>");
+		result.append("</body>");
+		result.append("</html>");
+		return result.toString();
+	}
+	/**
+	 * 京东网银支付异步回调
+	 * @param v_oid
+	 * @param v_pmode
+	 * @param v_pstatus
+	 * @param v_pstring
+	 * @param v_amount
+	 * @param v_moneytype
+	 * @param v_md5str
+	 * @param remark1
+	 * @param remark2
+	 * @return
+	 */
+	public boolean jdPayNotify(String v_oid, String v_pmode, String v_pstatus, String v_pstring, String v_amount,
+			String v_moneytype, String v_md5str, String remark1, String remark2) {
+		LogSystem.info("收到京东网银支付通知参数["+v_oid+"]["+v_pmode+"]["+v_pstatus+"]["+v_pstring+"]["+v_amount+"]["+v_moneytype+"]["+v_md5str+"]["+remark1+"]["+remark2+"]");
+		// **************************************** //
+		// MD5密钥要跟订单提交页相同，如Send.asp里的 key = "test" ,修改""号内 test 为您的密钥
+		// 如果您还没有设置MD5密钥请登陆我们为您提供商户后台，地址：https://merchant3.chinabank.com.cn/
+		String key = JdPayBankConfig.MD5_KEY; ; // 登陆后在上面的导航栏里可能找到“B2C”，在二级导航栏里有“MD5密钥设置”
+		// 建议您设置一个16位以上的密钥或更高，密钥最多64位，但设置16位已经足够了
+		// ****************************************
+		String text = v_oid + v_pstatus + v_amount + v_moneytype + key;
+		String v_md5text = "";
+		try {
+			v_md5text = MD5Security.md5_32_Big(text);
+		} catch (Exception e) {
+			LogSystem.error(e, "");
+		}
+		if (v_md5str.equals(v_md5text)) {
+			if ("30".equals(v_pstatus)) {
+				return false;
+			} else if ("20".equals(v_pstatus)) {
+				// 支付成功，商户 根据自己业务做相应逻辑处理
+				// 此处加入商户系统的逻辑处理（例如判断金额，判断支付状态，更新订单状态等等）......
+				afterOrderSuccess(v_oid, PayType.JdPay,v_pmode, 0);
+				LogSystem.info("处理订单成功");
+				return true;
+			}else{
+				LogSystem.info("处理失败，v_pstatus="+v_pstatus);
+				return false;
+			}
+		} else {
+			LogSystem.info("处理失败，MD5校验失败=，我方MD5="+v_md5text+",输入值为"+v_md5str);
 			return false;
 		}
 	}
