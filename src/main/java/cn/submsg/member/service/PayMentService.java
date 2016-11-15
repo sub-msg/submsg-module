@@ -204,7 +204,12 @@ public class PayMentService {
 	    		LogSystem.info("支付错误，产品找不到"+orderId+",productId="+order.getProductId());
 	    		return false;
 	    	}
-			boolean result = memberMsgInfoDao.addMsgNum(order.getUserId(), order.getProductNum()*mallProducts.getNums());
+			boolean result = false;
+					if(mallProducts.getId()!=6){
+						result = memberMsgInfoDao.addMsgNum(order.getUserId(), order.getProductNum()*mallProducts.getNums());
+					}else{
+						result = memberMsgInfoDao.addMsgBalance(order.getUserId(), order.getProductNum()*mallProducts.getNums());
+					}
 			if(!result){
 				LogSystem.info("支付错误，用户更新发送服务失败［"+orderId+"］,userId="+order.getUserId());
 				return false;
