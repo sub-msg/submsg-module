@@ -333,10 +333,10 @@ public class PayMentService {
 
 		String text = v_amount + v_moneytype + v_oid + v_mid + v_url + key; // 拼凑加密串
 		try {
-			v_md5info = MD5Security.md5_32_Big(text); // 网银支付平台对MD5值只认大写字符串，所以小写的MD5值得转换为大写
+			v_md5info = MD5Security.md5_32_Big(text);
 		} catch (Exception e) {
 			LogSystem.error(e, "");
-		}
+		} // 网银支付平台对MD5值只认大写字符串，所以小写的MD5值得转换为大写
 		String pmode_id = bankId; // 代表选择的银行
 		
 		StringBuffer result = new StringBuffer();
