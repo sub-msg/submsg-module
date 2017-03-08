@@ -97,7 +97,7 @@ public class ApiService {
 	public SendMessageResult sendMsg(String appId, String tempId,String to,String timestamp, String signature, String sign_type, String vars,String apiName,String ip,int sendType){
 		//默认卓望  该字段为测试字段
 		if(sendType==0){
-			sendType = ConfigLoader.getIntValue("send_type",MsgContentUtils.SENDTYPE_ZW);//MsgContentUtils.SENDTYPE_ZW;
+			sendType = ConfigLoader.getIntValue("send_type",MsgContentUtils.SENDTYPE_YP);//MsgContentUtils.SENDTYPE_ZW;
 		}
 		SendMessageResult apiResult = new SendMessageResult();
 		if(Strings.isNullOrEmpty(timestamp)){
@@ -242,7 +242,7 @@ public class ApiService {
 	public SendMessageResult sendMsgInternational(String appId, String regionCode,String tempId,String to,String timestamp, String signature, String sign_type, String vars,String apiName,String ip,int sendType){
 		//默认卓望  该字段为测试字段
 		if(sendType==0){
-			sendType = MsgContentUtils.SENDTYPE_SUBMAIL;
+			sendType = MsgContentUtils.SENDTYPE_YP;
 		}
 		SendMessageResult apiResult = new SendMessageResult();
 		if(Strings.isNullOrEmpty(timestamp)){
