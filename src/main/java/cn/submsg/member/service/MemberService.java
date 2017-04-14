@@ -31,6 +31,8 @@ import cn.submsg.member.bo.MemberMessageTemp;
 import cn.submsg.member.bo.MemberMsgInfo;
 import cn.submsg.member.bo.MemberProject;
 import cn.submsg.member.bo.MemberVerify;
+import cn.submsg.member.bo.Notice;
+import cn.submsg.member.bo.UserNotice;
 import cn.submsg.member.constant.VerifyType;
 import cn.submsg.member.dao.MallProductDao;
 import cn.submsg.member.dao.MemberDao;
@@ -39,6 +41,8 @@ import cn.submsg.member.dao.MemberMessageTempDao;
 import cn.submsg.member.dao.MemberMsgInfoDao;
 import cn.submsg.member.dao.MemberProjectDao;
 import cn.submsg.member.dao.MemberVerifyDao;
+import cn.submsg.member.dao.NoticeDao;
+import cn.submsg.member.dao.UserNoticeDao;
 import cn.submsg.message.utils.MsgContentUtils;
 
 public class MemberService {
@@ -68,13 +72,17 @@ public class MemberService {
     private MemberMessageSignDao memberMessageSignDao;
     @Autowired
     private AdminSignDao adminSignDao;
+    @Autowired
+    private NoticeDao noticeDao;
+    @Autowired
+    private UserNoticeDao userNoticeDao;
 
     /**
      * 获取所有产品列表
      * @return
      */
 	public List<MallProducts> getProductList(){
-		return mallProductDao.getAll();
+		return mallProductDao.getList("order by id asc", new SqlParamBean("status", 0));
 	}
 	
 	
@@ -612,8 +620,35 @@ public class MemberService {
 			throw new ServiceException(1,"签名删除失败");
 		}
 	}
-
-	
+    /**
+     * 获取最近一条未读通知
+     * @param userId
+     * @return
+     */
+	public Notice getLastNotReadNotice(int userId){
+		Notice notice = noticeDao.getLastNotice();
+		UserNotice userNotice = userNoticeDao.get(new SqlParamBean("user_id",userId),new SqlParamBean("and", "notice_id", notice.getId()));
+		if(userNotice!=null){
+			return null;
+		}
+		return notice;
+	}
+	/**
+	 * 已读
+	 * @param userId
+	 * @param noticeId
+	 */
+	public void readNotice(int userId,int noticeId){
+		UserNotice userNotice = userNoticeDao.get(new SqlParamBean("user_id",userId),new SqlParamBean("and", "notice_id", noticeId));
+		Notice notice = noticeDao.get(new SqlParamBean("id", noticeId));
+        if(userNotice==null&&notice!=null){
+    		userNotice = new UserNotice();
+    		userNotice.setCreatedTime(new Date());
+    		userNotice.setNoticeId(noticeId);
+    		userNotice.setUserId(userId);
+    		userNoticeDao.add(userNotice);	
+        }
+	}
 	
 	public static void main(String[] args) {
 //		String cc= "xxxxxx${code}";

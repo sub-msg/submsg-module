@@ -234,7 +234,8 @@ public class GenEntityMysql {
 //		String[] tableNames = new String[]{"payment_order"};
 //		String[] tableNames = new String[]{"member_invoice"};
 //		String[] tableNames = new String[]{"doc","doc_reply"};
-		String[] tableNames = new String[]{"msg_International_data"};
+//		String[] tableNames = new String[]{"msg_International_data"};
+		String[] tableNames = new String[]{"notice","user_notice"};
 		for(int i=0;i<tableNames.length;i++){
 			new GenEntityMysql(tableNames[i]);
 		}
