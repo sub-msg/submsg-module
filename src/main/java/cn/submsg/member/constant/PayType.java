@@ -2,7 +2,8 @@ package cn.submsg.member.constant;
 
 public enum PayType {
     AliPay(1,"阿里支付"),
-    JdPay(2,"京东网银支付")
+    JdPay(2,"京东网银支付"),
+    AdminPay(3,"管理员后台补单")
     ;
     
     private int type;

@@ -1,7 +1,9 @@
 package cn.submsg.member.dao;
 
+import java.util.Date;
 import java.util.List;
 
+import com.google.common.base.Strings;
 import com.sr178.common.jdbc.SqlParameter;
 import com.sr178.common.jdbc.bean.IPage;
 
@@ -26,6 +28,28 @@ public class PayMentOrderDao extends SubMsgBaseDao<PaymentOrder> {
 		return this.getJdbc().getListPage(sql, PaymentOrder.class, SqlParameter.Instance().withInt(userId).withString(startTime).withString(endTime), pageSize, pageIndex);
 	}
 	/**
+	 * 后台查询用户订单信息
+	 * @param orderId
+	 * @param status
+	 * @param pageSize
+	 * @param pageIndex
+	 * @return
+	 */
+	public IPage<PaymentOrder> getPayMentOrderPage(String orderId,int status,int pageSize,int pageIndex){
+		String sql = "select * from "+super.getTable()+" where 1=1";
+		SqlParameter parameter = SqlParameter.Instance();
+		if(!Strings.isNullOrEmpty(orderId)){
+			sql = sql +" and order_id=?";
+			parameter.withString(orderId);
+		}
+		if(status>=0){
+			sql = sql +" and status=?";
+			parameter.withInt(status);
+		}
+		sql = sql +" order by created_time desc";
+		return this.getJdbc().getListPage(sql, PaymentOrder.class, parameter, pageSize, pageIndex);
+	}
+	/**
 	 * 更新订单至已发货
 	 * @param orderId
 	 * @param pay_type
@@ -34,8 +58,8 @@ public class PayMentOrderDao extends SubMsgBaseDao<PaymentOrder> {
 	 * @return
 	 */
 	public boolean updateOrderToSuccess(String orderId,int pay_type,String bank_order_id,int pay_user_id){
-		String sql = "update "+super.getTable()+" set status=1,pay_type=?,bank_order_id=?,pay_user_id=? where order_id=? and status=0 limit 1";
-		return this.getJdbc().update(sql, SqlParameter.Instance().withInt(pay_type).withString(bank_order_id).withInt(pay_user_id).withString(orderId))>0;
+		String sql = "update "+super.getTable()+" set status=1,pay_type=?,bank_order_id=?,pay_user_id=?,updated_time=? where order_id=? and status=0 limit 1";
+		return this.getJdbc().update(sql, SqlParameter.Instance().withInt(pay_type).withString(bank_order_id).withInt(pay_user_id).withObject(new Date()).withString(orderId))>0;
 	}
 	/**
 	 * 查询前几条充值记录

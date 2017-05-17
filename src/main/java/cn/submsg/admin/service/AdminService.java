@@ -18,6 +18,7 @@ import cn.submsg.admin.bo.AdminSign;
 import cn.submsg.admin.dao.AdminSignDao;
 import cn.submsg.member.bean.AdminMsgTempBean;
 import cn.submsg.member.bean.MsgTempBean;
+import cn.submsg.member.bo.PaymentOrder;
 import cn.submsg.member.dao.MemberDao;
 import cn.submsg.member.dao.MemberMessageSignDao;
 import cn.submsg.member.dao.MemberMessageTempDao;
@@ -155,5 +156,9 @@ public class AdminService {
      */
     public Double getTotalPayAmount(){
     	return payMentOrderDao.getTotalPayAmount();
+    }
+    
+    public IPage<PaymentOrder> getOrderPageList(String orderId,int status,int pageSize,int pageIndex){
+    	return payMentOrderDao.getPayMentOrderPage(orderId, status, pageSize, pageIndex);
     }
 }
