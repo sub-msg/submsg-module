@@ -205,7 +205,7 @@ public class PayMentService {
 	    		return false;
 	    	}
 			boolean result = false;
-					if(mallProducts.getId()!=6){
+					if(mallProducts.getId()!=1000){
 						result = memberMsgInfoDao.addMsgNum(order.getUserId(), order.getProductNum()*mallProducts.getNums());
 					}else{
 						result = memberMsgInfoDao.addMsgBalance(order.getUserId(), order.getProductNum()*mallProducts.getNums());
